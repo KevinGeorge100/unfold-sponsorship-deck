@@ -1800,46 +1800,7 @@
       }
     }
 
-    // Direct Single-Page PDF Exporter with Zero Extra/Blank Pages
-    function exportSinglePagePDF(element, filename, sideNav) {
-      if (typeof html2pdf === 'undefined') {
-        if (sideNav) sideNav.style.display = '';
-        window.print();
-        return;
-      }
-
-      const opt = {
-        margin:       [4, 4, 4, 4],
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 }
-      };
-
-      html2pdf().set(opt).from(element).toContainer().toCanvas().get('canvas').then(function(canvas) {
-        const imgData = canvas.toDataURL('image/jpeg', 0.98);
-        const mmW = (canvas.width * 0.264583) / 2;
-        const mmH = (canvas.height * 0.264583) / 2;
-
-        const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
-        const pdf = new jsPDFLib({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: [mmW + 8, mmH + 8]
-        });
-
-        pdf.addImage(imgData, 'JPEG', 4, 4, mmW, mmH);
-
-        // Add exact link overlays for single page
-        addExactPdfLinksSinglePage(pdf, element, 4, 4, mmW);
-
-        pdf.save(filename || 'UNFOLD_2026_Sponsorship_Deck.pdf');
-        if (sideNav) sideNav.style.display = '';
-      }).catch(function(err) {
-        console.error("PDF Export Error:", err);
-        if (sideNav) sideNav.style.display = '';
-        window.print();
-      });
-    }
-
+    // Custom Precision Link Alignment Helper
     function addExactPdfLinksSinglePage(pdf, container, marginLeft, marginTop, printableWidth) {
       if (!pdf || !container) return;
       const links = container.querySelectorAll('a[href]');
@@ -1874,6 +1835,46 @@
       });
     }
 
+    // Direct Programmatic PDF File Download Exporter (Zero Print Dialogs, Zero Extra Blank Pages)
+    function triggerDirectPdfDownload(element, filename, sideNav) {
+      if (typeof html2pdf === 'undefined') {
+        alert('PDF generator library is initializing. Please click again in a moment.');
+        if (sideNav) sideNav.style.display = '';
+        return;
+      }
+
+      const rect = element.getBoundingClientRect();
+      const mmWidth = Math.round(rect.width * 0.264583);
+      const mmHeight = Math.round(rect.height * 0.264583);
+
+      const opt = {
+        margin:       [4, 4, 4, 4],
+        filename:     filename || 'UNFOLD_2026_Sponsorship_Deck.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        enableLinks:  false,
+        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+        jsPDF:        { unit: 'mm', format: [mmWidth + 8, mmHeight + 8], orientation: 'portrait' },
+        pagebreak:    { mode: [] }
+      };
+
+      html2pdf()
+        .set(opt)
+        .from(element)
+        .toPdf()
+        .get('pdf')
+        .then(function(pdf) {
+          addExactPdfLinksSinglePage(pdf, element, 4, 4, mmWidth);
+        })
+        .save()
+        .then(function() {
+          if (sideNav) sideNav.style.display = '';
+        })
+        .catch(function(err) {
+          console.error("PDF generation error:", err);
+          if (sideNav) sideNav.style.display = '';
+        });
+    }
+
     // Programmatic 1-Click PDF Download Generator (html2pdf.js)
     function downloadPDF() {
       // Reveal all items prior to PDF rendering & disable transient CSS transforms
@@ -1888,7 +1889,7 @@
       if (sideNav) sideNav.style.display = 'none';
 
       const element = document.querySelector('.max-w-7xl') || document.body;
-      exportSinglePagePDF(element, 'UNFOLD_2026_Sponsorship_Deck.pdf', sideNav);
+      triggerDirectPdfDownload(element, 'UNFOLD_2026_Sponsorship_Deck.pdf', sideNav);
     }
 
     // Programmatic Pageless (Continuous Single-Page) PDF Generator
@@ -1905,7 +1906,7 @@
       if (sideNav) sideNav.style.display = 'none';
 
       const element = document.querySelector('.max-w-7xl') || document.body;
-      exportSinglePagePDF(element, 'UNFOLD_2026_Sponsorship_Deck.pdf', sideNav);
+      triggerDirectPdfDownload(element, 'UNFOLD_2026_Sponsorship_Deck.pdf', sideNav);
     }
 
     // Modal & CTA Handlers
