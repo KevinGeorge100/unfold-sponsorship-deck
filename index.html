@@ -402,11 +402,11 @@
 
   <!-- Main Outer Frame Container -->
   <div
-    class="max-w-7xl mx-auto bg-white/75 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-5 sm:p-8 md:p-12 border border-slate-300 relative overflow-hidden text-left mb-16">
+    class="max-w-7xl mx-auto bg-white/75 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-5 sm:p-8 md:p-12 border border-slate-300 relative text-left mb-16">
 
     <!-- Top Sticky Navigation Bar in Obsidian Navy (#0F172A) -->
     <header
-      class="sticky top-0 z-50 bg-[#0F172A] text-white backdrop-blur-md rounded-2xl py-3.5 px-4 sm:px-6 mb-8 border border-slate-700/70 shadow-xl flex items-center justify-between gap-4">
+      class="sticky top-4 z-50 bg-[#0F172A]/95 text-white backdrop-blur-md rounded-2xl py-3.5 px-4 sm:px-6 mb-8 border border-slate-700/70 shadow-2xl flex items-center justify-between gap-4">
       <!-- Brand Identifier -->
       <a href="#" class="flex items-center gap-2.5 shrink-0 group">
         <span class="font-serif font-normal text-xl sm:text-2xl tracking-tight text-white whitespace-nowrap">
@@ -527,15 +527,26 @@
         </div>
 
         <!-- Hero CTAs -->
-        <div class="flex flex-wrap items-center justify-center gap-4 font-sans">
-          <a href="https://tally.so/r/obZdgN" target="_blank" rel="noopener noreferrer"
-            class="magnetic-btn px-9 py-4 rounded-full bg-volt-400 text-black font-extrabold text-sm uppercase tracking-wider shadow-xl inline-block text-center">
-            Partner With Us
-          </a>
-          <a href="#slide-5"
-            class="px-9 py-4 rounded-full bg-[#0F172A] text-white border border-slate-700 font-bold text-sm uppercase tracking-wider hover:bg-slate-900 transition shadow-md">
-            View Sponsorship Matrix
-          </a>
+        <div class="flex flex-col items-center justify-center gap-3 font-sans">
+          <div class="flex flex-wrap items-center justify-center gap-4">
+            <a href="https://tally.so/r/obZdgN" target="_blank" rel="noopener noreferrer"
+              class="magnetic-btn px-9 py-4 rounded-full bg-volt-400 text-black font-extrabold text-sm uppercase tracking-wider shadow-xl inline-block text-center">
+              Partner With Us
+            </a>
+            <a href="#slide-5"
+              class="px-9 py-4 rounded-full bg-[#0F172A] text-white border border-slate-700 font-bold text-sm uppercase tracking-wider hover:bg-slate-900 transition shadow-md">
+              View Sponsorship Matrix
+            </a>
+          </div>
+          <!-- 10-Minute Introductory Call Link -->
+          <div class="mt-2 text-center">
+            <a href="https://wa.me/918281651978?text=Hi%20Kevin,%20I'd%20like%20to%20book%20a%2010-minute%20introductory%20call%20for%20UNFOLD%202026"
+              target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-slate-700 hover:text-black transition group">
+              <span>📅 Or, book a 10-minute introductory call with our Event Lead</span>
+              <span class="text-volt-400 font-extrabold bg-[#0F172A] px-2.5 py-0.5 rounded-full text-[11px] group-hover:bg-slate-800 transition">Schedule Call ↗</span>
+            </a>
+          </div>
         </div>
 
         <!-- Footer Banner Section with Official Logos from Assets -->
@@ -983,6 +994,15 @@
         <h2 class="text-4xl sm:text-5xl md:text-6xl font-serif text-slate-950 font-normal leading-tight">Sponsorship Tier Matrix</h2>
       </div>
 
+      <!-- Scarcity & FOMO Banner -->
+      <div class="bg-amber-500/10 border-l-4 border-amber-500 p-4 rounded-2xl mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm font-sans font-bold text-slate-800 shadow-sm">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">⏰</span>
+          <span><strong>High Partner Demand:</strong> Tiers are locked on a strict first-pledge basis. Title Partner is capped at <strong>Only 1 Slot</strong>.</span>
+        </div>
+        <span class="bg-amber-500 text-black px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap">First-Come Basis</span>
+      </div>
+
       <!-- Tier Investment Estimator Widget in Real Obsidian Navy -->
       <div class="obsidian-card p-6 sm:p-10 rounded-3xl mb-10 border-2 border-volt-400 relative overflow-hidden shadow-2xl">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6">
@@ -1066,7 +1086,10 @@
             <thead>
               <tr>
                 <th class="py-4 px-5 font-extrabold sticky top-0 font-sans">Feature / Deliverable</th>
-                <th class="py-4 px-5 font-extrabold text-volt-400 sticky top-0 font-sans">Title Partner (₹25k+)</th>
+                <th class="py-4 px-5 font-extrabold text-volt-400 sticky top-0 font-sans">
+                  Title Partner (₹25k+)
+                  <span class="block text-[10px] font-extrabold text-red-300 bg-red-950/90 px-2 py-0.5 rounded-full border border-red-500/50 mt-1 uppercase tracking-wider">🔥 Only 1 Slot Available</span>
+                </th>
                 <th class="py-4 px-5 font-extrabold text-white sticky top-0 font-sans">Gold Partner (₹15k)</th>
                 <th class="py-4 px-5 font-extrabold text-slate-200 sticky top-0 font-sans">Silver Partner (₹7.5k)</th>
                 <th class="py-4 px-5 font-extrabold text-emerald-400 sticky top-0 font-sans">In-Kind (₹7.5k+ Equiv.)</th>
@@ -1137,8 +1160,11 @@
       <!-- Mobile Responsive Tier Cards Breakdown -->
       <div class="md:hidden space-y-4">
         <div class="obsidian-card p-6 rounded-2xl text-left border-l-4 border-l-volt-400">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="font-serif text-white text-2xl font-normal">Title Partner</h4>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2">
+              <h4 class="font-serif text-white text-2xl font-normal">Title Partner</h4>
+              <span class="bg-red-500/20 text-red-400 border border-red-500/40 text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full font-sans">Only 1 Slot Available</span>
+            </div>
             <span class="bg-volt-400 px-3 py-1 rounded text-black font-serif italic font-bold text-xl">₹25,000+</span>
           </div>
           <ul class="text-base space-y-2 text-slate-200 font-medium">
@@ -1206,10 +1232,15 @@
       <div class="obsidian-card p-8 sm:p-12 rounded-3xl border-2 border-volt-400 relative">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
-            <span
-              class="px-4 py-1.5 rounded-full bg-volt-400 text-black text-xs font-extrabold uppercase tracking-wider font-sans">
-              Exclusive Naming Rights
-            </span>
+            <div class="flex flex-wrap items-center gap-2">
+              <span
+                class="px-4 py-1.5 rounded-full bg-volt-400 text-black text-xs font-extrabold uppercase tracking-wider font-sans">
+                Exclusive Naming Rights
+              </span>
+              <span class="px-3 py-1.5 rounded-full bg-red-600 text-white text-xs font-extrabold uppercase tracking-wider font-sans animate-pulse inline-flex items-center gap-1.5 shadow-md">
+                <span class="w-2 h-2 rounded-full bg-white animate-ping"></span> Only 1 Slot Available
+              </span>
+            </div>
             <h3 class="text-4xl sm:text-5xl font-serif font-normal text-white mt-3">TITLE PARTNER</h3>
           </div>
           <div class="text-5xl sm:text-6xl font-serif italic text-volt-400 font-bold">₹25,000+</div>
@@ -1340,9 +1371,12 @@
     <!-- SLIDE 8: Micro-Sponsorships & Session Benches -->
     <section id="slide-8" class="reveal-item py-10 mb-14 border-t border-slate-200">
       <div class="mb-8">
-        <div class="inline-block px-3 py-1 rounded-lg bg-[#0F172A] text-volt-400 text-xs font-extrabold uppercase tracking-[0.15em] mb-2 font-sans">SESSION ADD-ONS</div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#0F172A] text-volt-400 text-xs font-extrabold uppercase tracking-[0.15em] mb-2 font-sans">
+          <span>SESSION ADD-ONS</span>
+          <span class="bg-amber-500/20 text-amber-300 text-[10px] px-2 py-0.5 rounded border border-amber-500/40">Limited to 1 Partner per Session</span>
+        </div>
         <h2 class="text-4xl sm:text-5xl md:text-6xl font-serif text-slate-950 font-normal leading-tight">Session Bench Micro-Sponsorships</h2>
-        <p class="text-lg font-serif italic text-slate-800 mt-1">Please select the specific session(s) your organization wishes to sponsor:</p>
+        <p class="text-lg font-serif italic text-slate-800 mt-1">Select your exclusive session benchmark (Strictly 1 corporate partner per session):</p>
       </div>
 
       <div class="space-y-6">
@@ -1350,9 +1384,10 @@
         <div
           class="glass-deck-card p-6 sm:p-8 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-l-8 border-l-volt-400">
           <div>
-            <div class="flex items-center gap-2 mb-2 font-sans">
+            <div class="flex flex-wrap items-center gap-2 mb-2 font-sans">
               <span class="px-2.5 py-1 rounded bg-[#0F172A] text-volt-400 text-xs font-extrabold uppercase">Day 1 • Technical Workshop</span>
               <span class="text-xs font-bold text-slate-600 uppercase">Architecture Lab</span>
+              <span class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-900 border border-amber-500/40 text-[10px] font-extrabold uppercase tracking-wider">⚡ Limited to 1 Partner per Session</span>
             </div>
             <h3 class="text-3xl font-serif font-normal text-slate-950 mb-3">"AI Co-Founder & MVP Architecture Lab" — Powered by [Your Brand]</h3>
             <ul class="space-y-1.5 text-base text-slate-800 font-medium mb-4 md:mb-0">
@@ -1375,9 +1410,10 @@
         <div
           class="glass-deck-card p-6 sm:p-8 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-l-8 border-l-blue-600">
           <div>
-            <div class="flex items-center gap-2 mb-2 font-sans">
+            <div class="flex flex-wrap items-center gap-2 mb-2 font-sans">
               <span class="px-2.5 py-1 rounded bg-blue-100 text-blue-900 text-xs font-extrabold uppercase border border-blue-300">Day 2 • Pitch Training</span>
               <span class="text-xs font-bold text-slate-600 uppercase">Masterclass</span>
+              <span class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-900 border border-amber-500/40 text-[10px] font-extrabold uppercase tracking-wider">⚡ Limited to 1 Partner per Session</span>
             </div>
             <h3 class="text-3xl font-serif font-normal text-slate-950 mb-3">"Pitch Masterclass & Investor Storytelling" — Powered by [Your Brand]</h3>
             <ul class="space-y-1.5 text-base text-slate-800 font-medium mb-4 md:mb-0">
@@ -1400,9 +1436,10 @@
         <div
           class="glass-deck-card p-6 sm:p-8 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-l-8 border-l-slate-800">
           <div>
-            <div class="flex items-center gap-2 mb-2 font-sans">
+            <div class="flex flex-wrap items-center gap-2 mb-2 font-sans">
               <span class="px-2.5 py-1 rounded bg-slate-100 text-slate-900 text-xs font-extrabold uppercase border border-slate-300">Day 1 • Fireside & Lounge</span>
               <span class="text-xs font-bold text-slate-600 uppercase">Networking</span>
+              <span class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-900 border border-amber-500/40 text-[10px] font-extrabold uppercase tracking-wider">⚡ Limited to 1 Partner per Session</span>
             </div>
             <h3 class="text-3xl font-serif font-normal text-slate-950 mb-3">"Founder War Stories & Fireside Chat" — Powered by [Your Brand]</h3>
             <ul class="space-y-1.5 text-base text-slate-800 font-medium mb-4 md:mb-0">
@@ -1494,6 +1531,15 @@
             class="magnetic-btn mt-8 w-full py-4 px-6 rounded-full bg-volt-400 text-black font-extrabold text-sm uppercase tracking-wider shadow-lg font-sans text-center block">
             Submit 60-Second Online Form
           </a>
+          <!-- 10-Minute Introductory Call Link -->
+          <div class="mt-4 text-center font-sans">
+            <a href="https://wa.me/918281651978?text=Hi%20Kevin,%20I'd%20like%20to%20book%20a%2010-minute%20introductory%20call%20for%20UNFOLD%202026"
+              target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-slate-700 hover:text-black transition group">
+              <span>📅 Or, book a 10-minute introductory call with our Event Lead</span>
+              <span class="text-volt-400 font-extrabold bg-[#0F172A] px-2.5 py-0.5 rounded-full text-[11px] group-hover:bg-slate-800 transition">Schedule Call ↗</span>
+            </a>
+          </div>
         </div>
 
         <!-- Right Side — Direct Action Contact Cards (Phone + WhatsApp Buttons) -->
