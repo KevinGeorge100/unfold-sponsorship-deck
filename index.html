@@ -1800,24 +1800,52 @@
       }
     }
 
-    // Custom Link Precision Alignment Helper for html2pdf
-    function addExactPdfLinks(pdf, container, opt) {
-      if (!pdf || !container) return;
+    // Direct Single-Page PDF Exporter with Zero Extra/Blank Pages
+    function exportSinglePagePDF(element, filename, sideNav) {
+      if (typeof html2pdf === 'undefined') {
+        if (sideNav) sideNav.style.display = '';
+        window.print();
+        return;
+      }
 
+      const opt = {
+        margin:       [4, 4, 4, 4],
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 }
+      };
+
+      html2pdf().set(opt).from(element).toContainer().toCanvas().get('canvas').then(function(canvas) {
+        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+        const mmW = (canvas.width * 0.264583) / 2;
+        const mmH = (canvas.height * 0.264583) / 2;
+
+        const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+        const pdf = new jsPDFLib({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: [mmW + 8, mmH + 8]
+        });
+
+        pdf.addImage(imgData, 'JPEG', 4, 4, mmW, mmH);
+
+        // Add exact link overlays for single page
+        addExactPdfLinksSinglePage(pdf, element, 4, 4, mmW);
+
+        pdf.save(filename || 'UNFOLD_2026_Sponsorship_Deck.pdf');
+        if (sideNav) sideNav.style.display = '';
+      }).catch(function(err) {
+        console.error("PDF Export Error:", err);
+        if (sideNav) sideNav.style.display = '';
+        window.print();
+      });
+    }
+
+    function addExactPdfLinksSinglePage(pdf, container, marginLeft, marginTop, printableWidth) {
+      if (!pdf || !container) return;
       const links = container.querySelectorAll('a[href]');
       if (!links || links.length === 0) return;
 
       const containerRect = container.getBoundingClientRect();
-      const margin = opt.margin || [0, 0, 0, 0];
-      const marginTop = Array.isArray(margin) ? margin[0] : margin;
-      const marginLeft = Array.isArray(margin) ? (margin[1] !== undefined ? margin[1] : margin) : margin;
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const totalPages = pdf.internal.getNumberOfPages();
-
-      // Available PDF canvas width inside margins
-      const printableWidth = pdfWidth - (marginLeft * 2);
       const scale = printableWidth / containerRect.width;
 
       links.forEach(a => {
@@ -1838,22 +1866,11 @@
         const relY = rect.top - containerRect.top;
 
         const x = marginLeft + (relX * scale);
-        const rawY = marginTop + (relY * scale);
+        const y = marginTop + (relY * scale);
         const w = rect.width * scale;
         const h = rect.height * scale;
 
-        // Calculate page index for multi-page export
-        let pageNum = Math.floor(rawY / pdfHeight) + 1;
-        let y = rawY % pdfHeight;
-
-        if (pageNum > totalPages) {
-          pageNum = totalPages;
-        }
-
-        if (pdf.setPage && pageNum >= 1 && pageNum <= totalPages) {
-          pdf.setPage(pageNum);
-          pdf.link(x, y, w, h, { url: fullUrl });
-        }
+        pdf.link(x, y, w, h, { url: fullUrl });
       });
     }
 
@@ -1871,34 +1888,7 @@
       if (sideNav) sideNav.style.display = 'none';
 
       const element = document.querySelector('.max-w-7xl') || document.body;
-
-      const opt = {
-        margin:       [10, 8, 10, 8],
-        filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        enableLinks:  false,
-        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'] }
-      };
-
-      if (typeof html2pdf !== 'undefined') {
-        html2pdf()
-          .set(opt)
-          .from(element)
-          .toPdf()
-          .get('pdf')
-          .then(function(pdf) {
-            addExactPdfLinks(pdf, element, opt);
-          })
-          .save()
-          .then(() => {
-            if (sideNav) sideNav.style.display = '';
-          });
-      } else {
-        if (sideNav) sideNav.style.display = '';
-        window.print();
-      }
+      exportSinglePagePDF(element, 'UNFOLD_2026_Sponsorship_Deck.pdf', sideNav);
     }
 
     // Programmatic Pageless (Continuous Single-Page) PDF Generator
@@ -1915,39 +1905,7 @@
       if (sideNav) sideNav.style.display = 'none';
 
       const element = document.querySelector('.max-w-7xl') || document.body;
-      const rect = element.getBoundingClientRect();
-
-      // Convert exact pixel dimensions to mm (1 px = 0.264583 mm)
-      const mmWidth = Math.round(rect.width * 0.264583);
-      const mmHeight = Math.round(rect.height * 0.264583);
-
-      const opt = {
-        margin:       [2, 2, 2, 2],
-        filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        enableLinks:  false,
-        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-        jsPDF:        { unit: 'mm', format: [mmWidth + 4, mmHeight + 4], orientation: 'portrait' },
-        pagebreak:    { mode: [] }
-      };
-
-      if (typeof html2pdf !== 'undefined') {
-        html2pdf()
-          .set(opt)
-          .from(element)
-          .toPdf()
-          .get('pdf')
-          .then(function(pdf) {
-            addExactPdfLinks(pdf, element, opt);
-          })
-          .save()
-          .then(() => {
-            if (sideNav) sideNav.style.display = '';
-          });
-      } else {
-        if (sideNav) sideNav.style.display = '';
-        window.print();
-      }
+      exportSinglePagePDF(element, 'UNFOLD_2026_Sponsorship_Deck.pdf', sideNav);
     }
 
     // Modal & CTA Handlers
