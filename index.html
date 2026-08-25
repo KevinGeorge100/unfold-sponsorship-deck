@@ -1766,55 +1766,6 @@
       }
     }
 
-    // Helper to process PDF string / blob and insert /NewWindow true into URI Action Dictionaries
-    function exportPdfWithNewTabLinks(opt, element, sideNav) {
-      if (typeof html2pdf === 'undefined') {
-        if (sideNav) sideNav.style.display = '';
-        window.print();
-        return;
-      }
-
-      html2pdf()
-        .set(opt)
-        .from(element)
-        .toPdf()
-        .get('pdf')
-        .then(function(pdf) {
-          if (pdf && pdf.internal && pdf.internal.pages) {
-            for (let i = 0; i < pdf.internal.pages.length; i++) {
-              if (typeof pdf.internal.pages[i] === 'string') {
-                pdf.internal.pages[i] = pdf.internal.pages[i].replace(/\/S\s*\/URI\s*\/URI\s*\(/g, '/S /URI /NewWindow true /URI (');
-              }
-            }
-          }
-        })
-        .output('blob')
-        .then(function(blob) {
-          return blob.text();
-        })
-        .then(function(text) {
-          // Replace all URI action dictionaries to include /NewWindow true
-          const updatedText = text.replace(/\/S\s*\/URI\s*\/URI\s*\(/g, '/S /URI /NewWindow true /URI (');
-          const newBlob = new Blob([updatedText], { type: 'application/pdf' });
-
-          const downloadLink = document.createElement('a');
-          downloadLink.href = URL.createObjectURL(newBlob);
-          downloadLink.download = opt.filename || 'UNFOLD_2026_Sponsorship_Deck.pdf';
-          downloadLink.target = '_blank';
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
-          setTimeout(() => URL.revokeObjectURL(downloadLink.href), 5000);
-
-          if (sideNav) sideNav.style.display = '';
-        })
-        .catch(function(err) {
-          console.error("PDF generation error:", err);
-          if (sideNav) sideNav.style.display = '';
-          window.print();
-        });
-    }
-
     // Programmatic 1-Click PDF Download Generator (html2pdf.js)
     function downloadPDF() {
       // Reveal all items prior to PDF rendering
@@ -1827,6 +1778,8 @@
       const sideNav = document.getElementById('slide-nav');
       if (sideNav) sideNav.style.display = 'none';
 
+      const element = document.querySelector('.max-w-7xl') || document.body;
+
       const opt = {
         margin:       [8, 8, 8, 8],
         filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
@@ -1836,8 +1789,14 @@
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
 
-      const element = document.querySelector('.max-w-7xl') || document.body;
-      exportPdfWithNewTabLinks(opt, element, sideNav);
+      if (typeof html2pdf !== 'undefined') {
+        html2pdf().set(opt).from(element).save().then(() => {
+          if (sideNav) sideNav.style.display = '';
+        });
+      } else {
+        if (sideNav) sideNav.style.display = '';
+        window.print();
+      }
     }
 
     // Programmatic Pageless (Continuous Single-Page) PDF Generator
@@ -1869,7 +1828,14 @@
         pagebreak:    { mode: 'avoid-all' }
       };
 
-      exportPdfWithNewTabLinks(opt, element, sideNav);
+      if (typeof html2pdf !== 'undefined') {
+        html2pdf().set(opt).from(element).save().then(() => {
+          if (sideNav) sideNav.style.display = '';
+        });
+      } else {
+        if (sideNav) sideNav.style.display = '';
+        window.print();
+      }
     }
 
     // Modal & CTA Handlers
