@@ -1789,6 +1789,7 @@
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
+      const totalPages = pdf.internal.getNumberOfPages();
 
       // Available PDF canvas width inside margins
       const printableWidth = pdfWidth - (marginLeft * 2);
@@ -1817,14 +1818,17 @@
         const h = rect.height * scale;
 
         // Calculate page index for multi-page export
-        const pageNum = Math.floor(rawY / pdfHeight) + 1;
-        const y = rawY % pdfHeight;
+        let pageNum = Math.floor(rawY / pdfHeight) + 1;
+        let y = rawY % pdfHeight;
 
-        if (pdf.setPage && pageNum <= pdf.internal.getNumberOfPages()) {
-          pdf.setPage(pageNum);
+        if (pageNum > totalPages) {
+          pageNum = totalPages;
         }
 
-        pdf.link(x, y, w, h, { url: fullUrl });
+        if (pdf.setPage && pageNum >= 1 && pageNum <= totalPages) {
+          pdf.setPage(pageNum);
+          pdf.link(x, y, w, h, { url: fullUrl });
+        }
       });
     }
 
@@ -1844,13 +1848,13 @@
       const element = document.querySelector('.max-w-7xl') || document.body;
 
       const opt = {
-        margin:       [12, 10, 12, 10],
+        margin:       [10, 8, 10, 8],
         filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
         enableLinks:  false,
         html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak:    { mode: ['css', 'legacy'] }
       };
 
       if (typeof html2pdf !== 'undefined') {
@@ -1893,13 +1897,13 @@
       const mmHeight = Math.round(rect.height * 0.264583);
 
       const opt = {
-        margin:       [4, 4, 4, 4],
+        margin:       [2, 2, 2, 2],
         filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
         enableLinks:  false,
         html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-        jsPDF:        { unit: 'mm', format: [mmWidth + 8, mmHeight + 8], orientation: 'portrait' },
-        pagebreak:    { mode: 'avoid-all' }
+        jsPDF:        { unit: 'mm', format: [mmWidth + 4, mmHeight + 4], orientation: 'portrait' },
+        pagebreak:    { mode: [] }
       };
 
       if (typeof html2pdf !== 'undefined') {
