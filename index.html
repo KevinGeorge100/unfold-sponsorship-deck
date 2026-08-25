@@ -1775,13 +1775,67 @@
       }
     }
 
+    // Custom Link Precision Alignment Helper for html2pdf
+    function addExactPdfLinks(pdf, container, opt) {
+      if (!pdf || !container) return;
+
+      const links = container.querySelectorAll('a[href]');
+      if (!links || links.length === 0) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const margin = opt.margin || [0, 0, 0, 0];
+      const marginTop = Array.isArray(margin) ? margin[0] : margin;
+      const marginLeft = Array.isArray(margin) ? (margin[1] !== undefined ? margin[1] : margin) : margin;
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // Available PDF canvas width inside margins
+      const printableWidth = pdfWidth - (marginLeft * 2);
+      const scale = printableWidth / containerRect.width;
+
+      links.forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+        let fullUrl = href;
+        if (href.startsWith('#')) {
+          fullUrl = window.location.origin + window.location.pathname + href;
+        } else if (!href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('tel:')) {
+          fullUrl = new URL(href, window.location.href).href;
+        }
+
+        const rect = a.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+
+        const relX = rect.left - containerRect.left;
+        const relY = rect.top - containerRect.top;
+
+        const x = marginLeft + (relX * scale);
+        const rawY = marginTop + (relY * scale);
+        const w = rect.width * scale;
+        const h = rect.height * scale;
+
+        // Calculate page index for multi-page export
+        const pageNum = Math.floor(rawY / pdfHeight) + 1;
+        const y = rawY % pdfHeight;
+
+        if (pdf.setPage && pageNum <= pdf.internal.getNumberOfPages()) {
+          pdf.setPage(pageNum);
+        }
+
+        pdf.link(x, y, w, h, { url: fullUrl });
+      });
+    }
+
     // Programmatic 1-Click PDF Download Generator (html2pdf.js)
     function downloadPDF() {
-      // Reveal all items prior to PDF rendering
-      document.querySelectorAll('.reveal-item').forEach(el => {
+      // Reveal all items prior to PDF rendering & disable transient CSS transforms
+      document.querySelectorAll('.reveal-item, .magnetic-btn, .glass-deck-card, .obsidian-card').forEach(el => {
         el.classList.add('revealed');
         el.style.opacity = '1';
         el.style.transform = 'none';
+        el.style.transition = 'none';
       });
 
       const sideNav = document.getElementById('slide-nav');
@@ -1793,16 +1847,25 @@
         margin:       [12, 10, 12, 10],
         filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
-        enableLinks:  true,
-        html2canvas:  { scale: 2, useCORS: true, logging: false, enableLinks: true },
+        enableLinks:  false,
+        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       if (typeof html2pdf !== 'undefined') {
-        html2pdf().set(opt).from(element).save().then(() => {
-          if (sideNav) sideNav.style.display = '';
-        });
+        html2pdf()
+          .set(opt)
+          .from(element)
+          .toPdf()
+          .get('pdf')
+          .then(function(pdf) {
+            addExactPdfLinks(pdf, element, opt);
+          })
+          .save()
+          .then(() => {
+            if (sideNav) sideNav.style.display = '';
+          });
       } else {
         if (sideNav) sideNav.style.display = '';
         window.print();
@@ -1811,11 +1874,12 @@
 
     // Programmatic Pageless (Continuous Single-Page) PDF Generator
     function downloadPagelessPDF() {
-      // Reveal all items prior to rendering
-      document.querySelectorAll('.reveal-item').forEach(el => {
+      // Reveal all items prior to rendering & disable transient CSS transforms
+      document.querySelectorAll('.reveal-item, .magnetic-btn, .glass-deck-card, .obsidian-card').forEach(el => {
         el.classList.add('revealed');
         el.style.opacity = '1';
         el.style.transform = 'none';
+        el.style.transition = 'none';
       });
 
       const sideNav = document.getElementById('slide-nav');
@@ -1832,16 +1896,25 @@
         margin:       [4, 4, 4, 4],
         filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
-        enableLinks:  true,
-        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0, enableLinks: true },
+        enableLinks:  false,
+        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
         jsPDF:        { unit: 'mm', format: [mmWidth + 8, mmHeight + 8], orientation: 'portrait' },
         pagebreak:    { mode: 'avoid-all' }
       };
 
       if (typeof html2pdf !== 'undefined') {
-        html2pdf().set(opt).from(element).save().then(() => {
-          if (sideNav) sideNav.style.display = '';
-        });
+        html2pdf()
+          .set(opt)
+          .from(element)
+          .toPdf()
+          .get('pdf')
+          .then(function(pdf) {
+            addExactPdfLinks(pdf, element, opt);
+          })
+          .save()
+          .then(() => {
+            if (sideNav) sideNav.style.display = '';
+          });
       } else {
         if (sideNav) sideNav.style.display = '';
         window.print();
