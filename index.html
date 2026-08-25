@@ -241,13 +241,10 @@
 
       /* Hide non-printable interactive navigation & sticky elements */
       #interactive-bg,
-      header,
       #mobile-menu,
       .fixed,
       #slide-dots-nav,
-      #spark-modal,
-      button,
-      a[href*="tally.so"] {
+      #spark-modal {
         display: none !important;
       }
 
@@ -1551,12 +1548,12 @@
               <div class="text-sm font-bold text-slate-700 font-sans">Overall Event Lead</div>
             </div>
             <div class="flex items-center gap-2">
-              <a href="tel:+918281651978"
+              <a href="tel:+918281651978" target="_blank" rel="noopener noreferrer"
                 class="px-4 py-2 rounded-full bg-[#0F172A] text-white text-xs font-extrabold hover:bg-slate-900 border border-slate-700 transition font-sans">
                 Call
               </a>
               <a href="https://wa.me/918281651978?text=Hi%20Kevin,%20I'm%20interested%20in%20sponsoring%20UNFOLD%202026"
-                target="_blank"
+                target="_blank" rel="noopener noreferrer"
                 class="px-4 py-2 rounded-full bg-emerald-500 text-white text-xs font-extrabold hover:bg-emerald-600 transition font-sans">
                 WhatsApp
               </a>
@@ -1571,12 +1568,12 @@
               <div class="text-sm font-bold text-slate-700 font-sans">Technical Coordinator & Operations Dir.</div>
             </div>
             <div class="flex items-center gap-2">
-              <a href="tel:+919400982188"
+              <a href="tel:+919400982188" target="_blank" rel="noopener noreferrer"
                 class="px-4 py-2 rounded-full bg-[#0F172A] text-white text-xs font-extrabold hover:bg-slate-900 border border-slate-700 transition font-sans">
                 Call
               </a>
               <a href="https://wa.me/919400982188?text=Hi%20Mrudhul,%20I'm%20interested%20in%20sponsoring%20UNFOLD%202026"
-                target="_blank"
+                target="_blank" rel="noopener noreferrer"
                 class="px-4 py-2 rounded-full bg-emerald-500 text-white text-xs font-extrabold hover:bg-emerald-600 transition font-sans">
                 WhatsApp
               </a>
@@ -1589,7 +1586,7 @@
     <!-- Footer Links -->
     <footer
       class="pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm font-bold text-slate-700 font-sans">
-      <div>Portal: <a href="https://unfold-2026.vercel.app" target="_blank"
+      <div>Portal: <a href="https://unfold-2026.vercel.app" target="_blank" rel="noopener noreferrer"
           class="font-extrabold text-slate-950 hover:underline">unfold-2026.vercel.app</a></div>
       <div>Venue: Christ College of Engineering, Irinjalakuda, Kerala</div>
       <div>&copy; 2026 UNFOLD Summit</div>
@@ -1601,7 +1598,7 @@
   <div
     class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0F172A] p-3.5 border-t border-slate-700 shadow-2xl flex items-center justify-between gap-3 font-sans">
     <a href="https://wa.me/918281651978?text=Hi%20Kevin,%20I'm%20interested%20in%20sponsoring%20UNFOLD%202026"
-      target="_blank"
+      target="_blank" rel="noopener noreferrer"
       class="flex-1 py-3 px-4 rounded-full bg-emerald-500 text-white font-extrabold text-sm text-center flex items-center justify-center gap-2">
       WhatsApp Lead
     </a>
@@ -1778,19 +1775,26 @@
         el.style.transform = 'none';
       });
 
+      const sideNav = document.getElementById('slide-nav');
+      if (sideNav) sideNav.style.display = 'none';
+
       const opt = {
         margin:       [8, 8, 8, 8],
         filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        enableLinks:  true,
+        html2canvas:  { scale: 2, useCORS: true, logging: false, enableLinks: true },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
 
       // If html2pdf library is loaded, download programmatically; otherwise fallback to print dialog
       if (typeof html2pdf !== 'undefined') {
         const element = document.querySelector('.max-w-7xl') || document.body;
-        html2pdf().set(opt).from(element).save();
+        html2pdf().set(opt).from(element).save().then(() => {
+          if (sideNav) sideNav.style.display = '';
+        });
       } else {
+        if (sideNav) sideNav.style.display = '';
         window.print();
       }
     }
@@ -1804,6 +1808,9 @@
         el.style.transform = 'none';
       });
 
+      const sideNav = document.getElementById('slide-nav');
+      if (sideNav) sideNav.style.display = 'none';
+
       const element = document.querySelector('.max-w-7xl') || document.body;
       const rect = element.getBoundingClientRect();
 
@@ -1815,14 +1822,18 @@
         margin:       [4, 4, 4, 4],
         filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+        enableLinks:  true,
+        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0, enableLinks: true },
         jsPDF:        { unit: 'mm', format: [mmWidth + 8, mmHeight + 8], orientation: 'portrait' },
         pagebreak:    { mode: 'avoid-all' }
       };
 
       if (typeof html2pdf !== 'undefined') {
-        html2pdf().set(opt).from(element).save();
+        html2pdf().set(opt).from(element).save().then(() => {
+          if (sideNav) sideNav.style.display = '';
+        });
       } else {
+        if (sideNav) sideNav.style.display = '';
         window.print();
       }
     }
