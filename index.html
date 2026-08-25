@@ -223,11 +223,17 @@
       background: #EAEF00;
     }
 
-    /* Clean Print & High-Res Slide-by-Slide PDF Export Styles */
+    /* Clean Print & High-Res PDF Export Styles */
     @media print {
       @page {
-        size: A4 landscape;
-        margin: 10mm;
+        size: A4 portrait;
+        margin: 12mm 10mm;
+      }
+
+      body, * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
       }
 
       html, body {
@@ -235,28 +241,42 @@
         color: #0F172A !important;
         padding: 0 !important;
         margin: 0 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
       }
 
-      /* Hide non-printable interactive navigation & sticky elements */
-      #interactive-bg,
+      /* Clean output: Hide navigation bars, download/print buttons, and floating action controls */
+      nav,
       #mobile-menu,
+      #interactive-bg,
       .fixed,
+      #slide-nav,
       #slide-dots-nav,
-      #spark-modal {
+      #spark-modal,
+      button[onclick*="download"],
+      button[onclick*="PDF"],
+      .print-hide {
         display: none !important;
       }
 
-      /* Force all slide sections to be 100% revealed & break page slide-by-slide */
+      /* Prevent page-break cuts across cards, tables, sections, and headers */
+      .glass-card,
+      .glass-deck-card,
+      .obsidian-card,
+      table,
+      tr,
+      tbody,
+      thead,
+      section,
+      header {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      /* Force all slide sections to be 100% revealed */
       section[id^="slide-"],
       .reveal-item {
         opacity: 1 !important;
         transform: none !important;
-        page-break-after: always !important;
-        break-after: page !important;
-        margin-bottom: 0 !important;
-        padding: 2.5rem !important;
+        padding: 1.5rem !important;
         background: #FFFFFF !important;
         border: 1px solid #CBD5E1 !important;
         box-shadow: none !important;
@@ -267,28 +287,20 @@
       .obsidian-card {
         background-color: #0F172A !important;
         color: #FFFFFF !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
       }
 
       [class*="bg-[#0F172A]"] {
         background-color: #0F172A !important;
         color: #FFFFFF !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
       }
 
       .bg-volt-400 {
         background-color: #EAEF00 !important;
         color: #000000 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
       }
 
       .text-volt-400 {
         color: #EAEF00 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
       }
 
       /* Ensure logo wall images print in full color */
@@ -301,8 +313,6 @@
       .matrix-table th {
         background-color: #0F172A !important;
         color: #EAEF00 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
       }
 
       /* Remove hover animations */
@@ -1781,12 +1791,13 @@
       const element = document.querySelector('.max-w-7xl') || document.body;
 
       const opt = {
-        margin:       [8, 8, 8, 8],
+        margin:       [12, 10, 12, 10],
         filename:     'UNFOLD_2026_Sponsorship_Deck.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
         enableLinks:  true,
         html2canvas:  { scale: 2, useCORS: true, logging: false, enableLinks: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       if (typeof html2pdf !== 'undefined') {
