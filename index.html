@@ -37,6 +37,8 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- Programmatic Direct PDF Generation Library (html2pdf.js) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- Google Fonts: Instrument Serif & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -431,7 +433,7 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-        <button onclick="window.print()" title="Download Deck PDF"
+        <button onclick="downloadPDFDirect()" title="Download Deck PDF"
           class="download-deck-btn border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-all font-semibold rounded-lg px-3.5 py-1.5 text-xs font-sans tracking-wide whitespace-nowrap">
           📄 Download Deck (PDF)
         </button>
@@ -1801,6 +1803,66 @@
         boothEl.innerText = 'Slide / Lounge Branding';
         const activePill = document.getElementById('tier-pill-7500');
         if (activePill) activePill.className = 'tier-pill-btn p-3.5 rounded-2xl bg-volt-400/20 border-2 border-volt-400 text-left transition font-sans shadow-lg';
+      }
+    }
+
+    // Direct 1-Click PDF Download Generator (WITHOUT system print dialog)
+    function downloadPDFDirect() {
+      const btn = document.querySelector('.download-deck-btn');
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.innerHTML = '⏳ Generating PDF...';
+        btn.disabled = true;
+      }
+
+      document.body.classList.add('pdf-exporting');
+      const targetEl = document.querySelector('.max-w-7xl') || document.body;
+
+      const revealItems = document.querySelectorAll('.reveal-item, .glass-deck-card, .obsidian-card');
+      revealItems.forEach(el => {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+
+      const opt = {
+        margin: [10, 10, 12, 10],
+        filename: 'UNFOLD_2026_Sponsorship_Deck.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#07090e',
+          scrollX: 0,
+          scrollY: 0
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      if (typeof html2pdf !== 'undefined') {
+        html2pdf().set(opt).from(targetEl).save().then(() => {
+          document.body.classList.remove('pdf-exporting');
+          if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          }
+        }).catch(err => {
+          console.error("html2pdf failed, executing print fallback:", err);
+          document.body.classList.remove('pdf-exporting');
+          if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          }
+          window.print();
+        });
+      } else {
+        document.body.classList.remove('pdf-exporting');
+        if (btn) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+        window.print();
       }
     }
 
