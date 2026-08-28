@@ -1023,7 +1023,7 @@
           </div>
           <div class="text-left md:text-right shrink-0 bg-white/5 p-4 sm:p-5 rounded-2xl border border-white/15 w-full md:w-auto shadow-inner">
             <div class="text-xs uppercase font-extrabold text-slate-400 font-sans tracking-wider">SELECTED INVESTMENT LEVEL</div>
-            <div id="calc-amount" class="text-4xl sm:text-5xl font-serif italic text-volt-400 font-bold mt-0.5">₹25,000+</div>
+            <div id="calc-amount" class="text-4xl sm:text-5xl font-serif italic text-volt-400 font-bold mt-0.5">₹50,000+</div>
             <div id="calc-tier-badge" class="mt-1 text-[11px] font-sans font-extrabold uppercase px-3 py-1 rounded-full bg-volt-400 text-black inline-block tracking-wider">
               Title Partner Package
             </div>
@@ -1032,39 +1032,39 @@
 
         <!-- Interactive Fast-Select Tier Buttons -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 font-sans">
-          <button type="button" onclick="selectTierBudget(3000)" id="tier-pill-3000"
-            class="tier-pill-btn p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition font-sans group">
-            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider group-hover:text-volt-400">MICRO ADD-ON</div>
-            <div class="text-sm font-extrabold text-white">₹3,000 – ₹5,000</div>
-          </button>
           <button type="button" onclick="selectTierBudget(7500)" id="tier-pill-7500"
             class="tier-pill-btn p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition font-sans group">
-            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider group-hover:text-volt-400">SILVER / IN-KIND</div>
+            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider group-hover:text-volt-400">MICRO / IN-KIND</div>
             <div class="text-sm font-extrabold text-white">₹7,500 Package</div>
           </button>
           <button type="button" onclick="selectTierBudget(15000)" id="tier-pill-15000"
             class="tier-pill-btn p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition font-sans group">
-            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider group-hover:text-volt-400">GOLD PARTNER</div>
+            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider group-hover:text-volt-400">SILVER PARTNER</div>
             <div class="text-sm font-extrabold text-white">₹15,000 Package</div>
           </button>
           <button type="button" onclick="selectTierBudget(25000)" id="tier-pill-25000"
+            class="tier-pill-btn p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition font-sans group">
+            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider group-hover:text-volt-400">GOLD PARTNER</div>
+            <div class="text-sm font-extrabold text-white">₹25,000+ Package</div>
+          </button>
+          <button type="button" onclick="selectTierBudget(50000)" id="tier-pill-50000"
             class="tier-pill-btn p-3.5 rounded-2xl bg-volt-400/20 border-2 border-volt-400 text-left transition font-sans shadow-lg">
             <div class="text-[10px] font-extrabold text-volt-400 uppercase tracking-wider">TITLE PARTNER</div>
-            <div class="text-sm font-extrabold text-white">₹25,000+ Flagship</div>
+            <div class="text-sm font-extrabold text-white">₹50,000+ Flagship</div>
           </button>
         </div>
 
         <!-- Slider Bar & Step Ticks -->
         <div class="relative mb-8">
-          <input type="range" id="budget-slider" min="3000" max="25000" step="1000" value="25000"
+          <input type="range" id="budget-slider" min="7500" max="50000" step="2500" value="50000"
             oninput="updateEstimator(this.value)"
             class="w-full h-3.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-volt-400 relative z-10" />
 
           <div class="flex justify-between items-center text-[11px] font-sans font-bold text-slate-400 mt-2 px-1">
-            <span class="hover:text-volt-400 cursor-pointer" onclick="selectTierBudget(3000)">| ₹3k (Micro)</span>
-            <span class="hover:text-volt-400 cursor-pointer" onclick="selectTierBudget(7500)">| ₹7.5k (Silver/In-Kind)</span>
-            <span class="hover:text-volt-400 cursor-pointer" onclick="selectTierBudget(15000)">| ₹15k (Gold)</span>
-            <span class="hover:text-volt-400 cursor-pointer text-volt-400 font-extrabold" onclick="selectTierBudget(25000)">| ₹25k+ (Title)</span>
+            <span class="hover:text-volt-400 cursor-pointer" onclick="selectTierBudget(7500)">| ₹7.5k (In-Kind)</span>
+            <span class="hover:text-volt-400 cursor-pointer" onclick="selectTierBudget(15000)">| ₹15k (Silver)</span>
+            <span class="hover:text-volt-400 cursor-pointer" onclick="selectTierBudget(25000)">| ₹25k+ (Gold)</span>
+            <span class="hover:text-volt-400 cursor-pointer text-volt-400 font-extrabold" onclick="selectTierBudget(50000)">| ₹50k+ (Title)</span>
           </div>
         </div>
 
@@ -1093,11 +1093,11 @@
               <tr>
                 <th class="py-4 px-5 font-extrabold sticky top-0 font-sans">Feature / Deliverable</th>
                 <th class="py-4 px-5 font-extrabold text-volt-400 sticky top-0 font-sans">
-                  Title Partner (₹25k+)
+                  Title Partner (₹50k+)
                   <span class="block text-[10px] font-extrabold text-red-300 bg-red-950/90 px-2 py-0.5 rounded-full border border-red-500/50 mt-1 uppercase tracking-wider">Only 1 Slot Available</span>
                 </th>
-                <th class="py-4 px-5 font-extrabold text-white sticky top-0 font-sans">Gold Partner (₹15k)</th>
-                <th class="py-4 px-5 font-extrabold text-slate-200 sticky top-0 font-sans">Silver Partner (₹7.5k)</th>
+                <th class="py-4 px-5 font-extrabold text-white sticky top-0 font-sans">Gold Partner (₹25k+)</th>
+                <th class="py-4 px-5 font-extrabold text-slate-200 sticky top-0 font-sans">Silver Partner (₹15k)</th>
                 <th class="py-4 px-5 font-extrabold text-emerald-400 sticky top-0 font-sans">In-Kind (₹7.5k+ Equiv.)</th>
               </tr>
             </thead>
@@ -1164,7 +1164,7 @@
               <h4 class="font-serif text-white text-2xl font-normal">Title Partner</h4>
               <span class="bg-red-500/20 text-red-400 border border-red-500/40 text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full font-sans">Only 1 Slot Available</span>
             </div>
-            <span class="bg-volt-400 px-3 py-1 rounded text-black font-serif italic font-bold text-xl">₹25,000+</span>
+            <span class="bg-volt-400 px-3 py-1 rounded text-black font-serif italic font-bold text-xl">₹50,000+</span>
           </div>
           <ul class="text-base space-y-2 text-slate-200 font-medium">
             <li>• Exclusive Track Naming Rights</li>
@@ -1179,7 +1179,7 @@
         <div class="glass-deck-card p-6 rounded-2xl text-left border-l-4 border-l-slate-800">
           <div class="flex items-center justify-between mb-3">
             <h4 class="font-serif text-slate-950 text-2xl font-normal">Gold Partner</h4>
-            <span class="bg-[#0F172A] px-3 py-1 rounded text-volt-400 font-serif italic font-bold text-xl">₹15,000</span>
+            <span class="bg-[#0F172A] px-3 py-1 rounded text-volt-400 font-serif italic font-bold text-xl">₹25,000+</span>
           </div>
           <ul class="text-base space-y-2 text-slate-800 font-medium">
             <li>• Official Category Partner Branding</li>
@@ -1195,7 +1195,7 @@
         <div class="glass-deck-card p-6 rounded-2xl text-left border-l-4 border-l-slate-400">
           <div class="flex items-center justify-between mb-3">
             <h4 class="font-serif text-slate-950 text-2xl font-normal">Silver Partner</h4>
-            <span class="bg-slate-100 px-3 py-1 rounded text-slate-900 font-serif italic font-bold text-xl border border-slate-300">₹7,500</span>
+            <span class="bg-slate-100 px-3 py-1 rounded text-slate-900 font-serif italic font-bold text-xl border border-slate-300">₹15,000</span>
           </div>
           <ul class="text-base space-y-2 text-slate-800 font-medium">
             <li>• Category Authority Digital Recognition</li>
@@ -1240,7 +1240,7 @@
             </div>
             <h3 class="text-4xl sm:text-5xl font-serif font-normal text-white mt-3">TITLE PARTNER</h3>
           </div>
-          <div class="text-5xl sm:text-6xl font-serif italic text-volt-400 font-bold">₹25,000+</div>
+          <div class="text-5xl sm:text-6xl font-serif italic text-volt-400 font-bold">₹50,000+</div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-base text-slate-200">
@@ -1297,7 +1297,7 @@
                 High ROI Partner
               </span>
               <div class="text-4xl font-serif italic text-slate-950 font-bold"><span
-                  class="bg-volt-400 px-3 py-1 rounded">₹15,000</span></div>
+                  class="bg-volt-400 px-3 py-1 rounded">₹25,000+</span></div>
             </div>
             <h3 class="text-3xl font-serif font-normal text-slate-950 mb-4">Gold Partner</h3>
             <ul class="space-y-2.5 text-sm text-slate-800 font-medium">
@@ -1323,7 +1323,7 @@
               <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-900 text-xs font-extrabold uppercase border border-slate-300 font-sans">
                 Ecosystem Enabler
               </span>
-              <div class="text-4xl font-serif italic text-slate-950 font-bold">₹7,500</div>
+              <div class="text-4xl font-serif italic text-slate-950 font-bold">₹15,000</div>
             </div>
             <h3 class="text-3xl font-serif font-normal text-slate-950 mb-4">Silver Partner</h3>
             <ul class="space-y-3 text-sm text-slate-800 font-medium">
@@ -1677,11 +1677,10 @@
             Tier</label>
           <select id="spark-tier"
             class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-sm text-slate-950 font-semibold focus:outline-none focus:border-black font-sans">
-            <option value="Title Partner">Title Partner (₹25,000+)</option>
-            <option value="Gold Partner">Gold Partner (₹15,000)</option>
-            <option value="Silver / In-Kind">Silver / In-Kind (₹7,500 equiv.)</option>
-            <option value="AI Session">AI Session (₹5,000)</option>
-            <option value="Mentor Roundtable">Mentor Roundtable (₹3,000)</option>
+            <option value="Title Partner">Title Partner (₹50,000+)</option>
+            <option value="Gold Partner">Gold Partner (₹25,000+)</option>
+            <option value="Silver Partner">Silver Partner (₹15,000)</option>
+            <option value="In-Kind Partner">In-Kind / Supporter (₹7,500 equiv.)</option>
           </select>
         </div>
 
@@ -1755,37 +1754,37 @@
         btn.className = 'tier-pill-btn p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition font-sans group';
       });
 
-      if (amount >= 25000) {
-        amountEl.innerText = '₹25,000+';
+      if (amount >= 50000) {
+        amountEl.innerText = '₹50,000+';
         if (badgeEl) badgeEl.innerText = 'Title Partner Package';
         keynoteEl.innerText = '10-Min Keynote Slot';
         juryEl.innerText = 'Full Opt-in Database';
         boothEl.innerText = 'Main Stage & Entrance';
-        const activePill = document.getElementById('tier-pill-25000');
+        const activePill = document.getElementById('tier-pill-50000');
         if (activePill) activePill.className = 'tier-pill-btn p-3.5 rounded-2xl bg-volt-400/20 border-2 border-volt-400 text-left transition font-sans shadow-lg';
-      } else if (amount >= 15000) {
-        amountEl.innerText = '₹15,000';
+      } else if (amount >= 25000) {
+        amountEl.innerText = '₹25,000+';
         if (badgeEl) badgeEl.innerText = 'Gold Partner Package';
         keynoteEl.innerText = '5-Min Presentation';
         juryEl.innerText = 'Category Partner';
         boothEl.innerText = 'Main Hall Banner';
-        const activePill = document.getElementById('tier-pill-15000');
+        const activePill = document.getElementById('tier-pill-25000');
         if (activePill) activePill.className = 'tier-pill-btn p-3.5 rounded-2xl bg-volt-400/20 border-2 border-volt-400 text-left transition font-sans shadow-lg';
-      } else if (amount >= 7500) {
-        amountEl.innerText = '₹7,500';
-        if (badgeEl) badgeEl.innerText = 'Silver / In-Kind Package';
+      } else if (amount >= 15000) {
+        amountEl.innerText = '₹15,000';
+        if (badgeEl) badgeEl.innerText = 'Silver Partner Package';
         keynoteEl.innerText = 'Valedictory Shoutout';
         juryEl.innerText = 'Ecosystem Supporter';
         boothEl.innerText = '1 Roll-Up Standee';
-        const activePill = document.getElementById('tier-pill-7500');
+        const activePill = document.getElementById('tier-pill-15000');
         if (activePill) activePill.className = 'tier-pill-btn p-3.5 rounded-2xl bg-volt-400/20 border-2 border-volt-400 text-left transition font-sans shadow-lg';
       } else {
         amountEl.innerText = `₹${amount.toLocaleString('en-IN')}`;
-        if (badgeEl) badgeEl.innerText = 'Micro Session Add-On';
-        keynoteEl.innerText = amount >= 4000 ? 'Pitch Masterclass' : 'AI Session Naming';
+        if (badgeEl) badgeEl.innerText = 'In-Kind / Micro Add-On';
+        keynoteEl.innerText = amount >= 10000 ? 'Pitch Masterclass' : 'AI Session Naming';
         juryEl.innerText = 'Standard Recognition';
         boothEl.innerText = 'Slide / Lounge Branding';
-        const activePill = document.getElementById('tier-pill-3000');
+        const activePill = document.getElementById('tier-pill-7500');
         if (activePill) activePill.className = 'tier-pill-btn p-3.5 rounded-2xl bg-volt-400/20 border-2 border-volt-400 text-left transition font-sans shadow-lg';
       }
     }
