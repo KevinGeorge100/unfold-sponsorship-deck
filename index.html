@@ -1826,7 +1826,34 @@
       });
     }
 
-    // Direct Programmatic PDF File Download Exporter — True Continuous Pageless Format (Zero Page Splits!)
+    // Universal Cross-Platform Single-Page Pageless PDF Exporter (Mobile, Desktop, Laptop, Mac, Windows, iOS, Android)
+    function savePdfUniversal(pdf, filename) {
+      const fn = filename || 'UNFOLD_2026_Sponsorship_Deck.pdf';
+      try {
+        pdf.save(fn);
+      } catch (e) {
+        console.warn("Direct pdf.save failed, executing universal blob download:", e);
+        try {
+          const blob = pdf.output('blob');
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = fn;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            if (document.body.contains(a)) document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 1500);
+        } catch (err) {
+          console.error("Blob download failed, opening PDF in new tab:", err);
+          const pdfUrl = pdf.output('bloburl');
+          window.open(pdfUrl, '_blank');
+        }
+      }
+    }
+
     function triggerDirectPdfDownload(element, filename, sideNav) {
       const fn = filename || 'UNFOLD_2026_Sponsorship_Deck.pdf';
 
@@ -1878,35 +1905,52 @@
       const html2canvasFunc = typeof window.html2canvas !== 'undefined' ? window.html2canvas : (typeof html2canvas !== 'undefined' ? html2canvas : null);
 
       if (html2canvasFunc) {
-        html2canvasFunc(element, { scale: 2, useCORS: true, logging: false, scrollY: 0, windowWidth: 1280 }).then(function(canvas) {
+        html2canvasFunc(element, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          scrollY: 0,
+          windowWidth: 1280
+        }).then(function(canvas) {
           const imgData = canvas.toDataURL('image/jpeg', 0.98);
-          const mmW = 210; // Standard width in mm
-          const mmH = (canvas.height / canvas.width) * mmW; // Proportional continuous single-page height
+          
+          // Framed single-page continuous format math matching exact user specification:
+          const pdfW = 210; // Standard 210mm width
+          const margin = 10; // 10mm white margin frame around document
+          const contentW = pdfW - (margin * 2); // 190mm printable width
+          const contentH = (canvas.height / canvas.width) * contentW;
+          const pdfH = contentH + (margin * 2); // Exact 1-page total continuous height
 
           const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
 
           if (jsPDFLib) {
-            // Create 1 single pageless PDF page with exact continuous height!
             const pdf = new jsPDFLib({
               orientation: 'portrait',
               unit: 'mm',
-              format: [mmW, mmH]
+              format: [pdfW, pdfH]
             });
 
-            pdf.addImage(imgData, 'JPEG', 0, 0, mmW, mmH);
-            addExactPdfLinksSinglePage(pdf, element, 0, 0, mmW);
-            pdf.save(fn);
+            // Fill crisp white background frame
+            pdf.setFillColor(255, 255, 255);
+            pdf.rect(0, 0, pdfW, pdfH, 'F');
+
+            // Draw deck image centered with 10mm margin frame
+            pdf.addImage(imgData, 'JPEG', margin, margin, contentW, contentH);
+            addExactPdfLinksSinglePage(pdf, element, margin, margin, contentW);
+            
+            savePdfUniversal(pdf, fn);
             restoreUI();
             return;
           }
 
           if (typeof html2pdf !== 'undefined') {
             const opt = {
-              margin: [0, 0, 0, 0],
+              margin: [10, 10, 10, 10],
               filename: fn,
               image: { type: 'jpeg', quality: 0.98 },
               html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, windowWidth: 1280 },
-              jsPDF: { unit: 'mm', format: [mmW, mmH], orientation: 'portrait' }
+              jsPDF: { unit: 'mm', format: [pdfW, pdfH], orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save().then(restoreUI).catch(() => { restoreUI(); window.print(); });
             return;
@@ -1921,7 +1965,7 @@
         });
       } else if (typeof html2pdf !== 'undefined') {
         const opt = {
-          margin: [0, 0, 0, 0],
+          margin: [10, 10, 10, 10],
           filename: fn,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, windowWidth: 1280 },
