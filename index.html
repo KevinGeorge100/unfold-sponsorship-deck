@@ -1805,6 +1805,58 @@
       }
     }
 
+    // Precision Link Alignment & Hyperlink Injection Helper for PDF Export
+    function addExactPdfLinksToDoc(pdf, container, marginLeft, marginTop, printableWidth) {
+      if (!pdf || !container) return;
+      const links = container.querySelectorAll('a[href]');
+      if (!links || links.length === 0) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const scale = printableWidth / containerRect.width;
+
+      links.forEach(a => {
+        const rawHref = a.getAttribute('href');
+        if (!rawHref || rawHref === '#' || rawHref.startsWith('javascript:')) return;
+
+        let fullUrl = rawHref;
+        if (rawHref.startsWith('#')) {
+          fullUrl = 'https://unfold-sponsorship-deck.vercel.app/' + rawHref;
+        } else if (
+          !rawHref.startsWith('http://') &&
+          !rawHref.startsWith('https://') &&
+          !rawHref.startsWith('tel:') &&
+          !rawHref.startsWith('mailto:') &&
+          !rawHref.startsWith('https://wa.me')
+        ) {
+          try {
+            fullUrl = new URL(rawHref, window.location.href).href;
+          } catch (e) {
+            fullUrl = rawHref;
+          }
+        }
+
+        const rect = a.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+
+        const relX = rect.left - containerRect.left;
+        const relY = rect.top - containerRect.top;
+
+        const padX = 0.5;
+        const padY = 0.5;
+
+        const x = Math.max(0, marginLeft + (relX * scale) - padX);
+        const y = Math.max(0, marginTop + (relY * scale) - padY);
+        const w = (rect.width * scale) + (padX * 2);
+        const h = Math.max((rect.height * scale) + (padY * 2), 3.5);
+
+        try {
+          pdf.link(x, y, w, h, { url: fullUrl });
+        } catch (err) {
+          console.warn("Could not inject PDF hyperlink:", fullUrl, err);
+        }
+      });
+    }
+
     // Dynamic Device-Aware 1-Click PDF Generator (Phone, Tablet, Laptop, Desktop)
     function downloadPDFDirect() {
       const btn = document.querySelector('.download-deck-btn');
@@ -1852,7 +1904,12 @@
       };
 
       if (typeof html2pdf !== 'undefined') {
-        html2pdf().set(opt).from(targetEl).save().then(() => {
+        html2pdf().set(opt).from(targetEl).toPdf().get('pdf').then(function(pdf) {
+          const pageW = pdf.internal.pageSize.getWidth();
+          const marginL = pdfMargins[1] || 10;
+          const printableW = pageW - (marginL * 2);
+          addExactPdfLinksToDoc(pdf, targetEl, marginL, pdfMargins[0] || 10, printableW);
+        }).save().then(() => {
           document.body.classList.remove('pdf-exporting');
           if (btn) {
             btn.innerHTML = originalText;
