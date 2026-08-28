@@ -1791,7 +1791,7 @@
       }
     }
 
-    // Custom Precision Link Alignment Helper
+    // Precision Link Alignment & Hyperlink Injection Helper for PDF Export
     function addExactPdfLinksSinglePage(pdf, container, marginLeft, marginTop, printableWidth) {
       if (!pdf || !container) return;
       const links = container.querySelectorAll('a[href]');
@@ -1801,14 +1801,24 @@
       const scale = printableWidth / containerRect.width;
 
       links.forEach(a => {
-        const href = a.getAttribute('href');
-        if (!href || href === '#' || href.startsWith('javascript:')) return;
+        const rawHref = a.getAttribute('href');
+        if (!rawHref || rawHref === '#' || rawHref.startsWith('javascript:')) return;
 
-        let fullUrl = href;
-        if (href.startsWith('#')) {
-          fullUrl = window.location.origin + window.location.pathname + href;
-        } else if (!href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('tel:')) {
-          fullUrl = new URL(href, window.location.href).href;
+        let fullUrl = rawHref;
+        if (rawHref.startsWith('#')) {
+          fullUrl = 'https://unfold-sponsorship-deck.vercel.app/' + rawHref;
+        } else if (
+          !rawHref.startsWith('http://') &&
+          !rawHref.startsWith('https://') &&
+          !rawHref.startsWith('tel:') &&
+          !rawHref.startsWith('mailto:') &&
+          !rawHref.startsWith('https://wa.me')
+        ) {
+          try {
+            fullUrl = new URL(rawHref, window.location.href).href;
+          } catch (e) {
+            fullUrl = rawHref;
+          }
         }
 
         const rect = a.getBoundingClientRect();
@@ -1817,12 +1827,20 @@
         const relX = rect.left - containerRect.left;
         const relY = rect.top - containerRect.top;
 
-        const x = marginLeft + (relX * scale);
-        const y = marginTop + (relY * scale);
-        const w = rect.width * scale;
-        const h = rect.height * scale;
+        // Generous padding for crisp hit area across mobile & desktop PDF readers
+        const padX = 0.5;
+        const padY = 0.5;
 
-        pdf.link(x, y, w, h, { url: fullUrl });
+        const x = Math.max(0, marginLeft + (relX * scale) - padX);
+        const y = Math.max(0, marginTop + (relY * scale) - padY);
+        const w = (rect.width * scale) + (padX * 2);
+        const h = Math.max((rect.height * scale) + (padY * 2), 3.5); // Ensure min 3.5mm height
+
+        try {
+          pdf.link(x, y, w, h, { url: fullUrl });
+        } catch (err) {
+          console.warn("Could not inject PDF hyperlink:", fullUrl, err);
+        }
       });
     }
 
@@ -1858,23 +1876,26 @@
       const fn = filename || 'UNFOLD_2026_Sponsorship_Deck.pdf';
       const targetEl = document.querySelector('.max-w-7xl') || document.body;
 
-      // 1. Temporarily hide UI navigation overlays on live page
-      const header = document.querySelector('header');
+      // 1. Temporarily hide non-printable action UI widgets (download button, mobile drawer, side floating dots)
       const mobileNav = document.getElementById('mobile-menu');
       const mobileBottomBar = document.querySelector('.md\\:hidden.fixed.bottom-0');
+      const downloadBtn = document.querySelector('button[onclick*="download"]');
+      const floatingSideNav = document.querySelector('aside');
       
       const prevSideNav = sideNav ? sideNav.style.display : '';
-      const prevHeader = header ? header.style.display : '';
       const prevMobileNav = mobileNav ? mobileNav.style.display : '';
       const prevBottomBar = mobileBottomBar ? mobileBottomBar.style.display : '';
+      const prevDownloadBtn = downloadBtn ? downloadBtn.style.display : '';
+      const prevFloatingSideNav = floatingSideNav ? floatingSideNav.style.display : '';
 
       const currentScrollY = window.scrollY;
       window.scrollTo(0, 0);
 
       if (sideNav) sideNav.style.display = 'none';
-      if (header) header.style.display = 'none';
       if (mobileNav) mobileNav.style.display = 'none';
       if (mobileBottomBar) mobileBottomBar.style.display = 'none';
+      if (downloadBtn) downloadBtn.style.display = 'none';
+      if (floatingSideNav) floatingSideNav.style.display = 'none';
 
       // 2. Temporarily reveal all scroll animated elements so everything captures crisp
       const revealItems = document.querySelectorAll('.reveal-item, .magnetic-btn, .glass-deck-card, .obsidian-card');
@@ -1895,9 +1916,10 @@
       function restoreUI() {
         window.scrollTo(0, currentScrollY);
         if (sideNav) sideNav.style.display = prevSideNav;
-        if (header) header.style.display = prevHeader;
         if (mobileNav) mobileNav.style.display = prevMobileNav;
         if (mobileBottomBar) mobileBottomBar.style.display = prevBottomBar;
+        if (downloadBtn) downloadBtn.style.display = prevDownloadBtn;
+        if (floatingSideNav) floatingSideNav.style.display = prevFloatingSideNav;
         revealItems.forEach((el, i) => {
           if (prevStyles[i]) {
             el.style.opacity = prevStyles[i].opacity;
