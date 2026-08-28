@@ -37,7 +37,9 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Programmatic Client-Side PDF Generation Library (html2pdf.js) -->
+  <!-- Programmatic Client-Side PDF Generation Libraries (html2canvas, jsPDF, html2pdf.js) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- Google Fonts: Instrument Serif & Plus Jakarta Sans -->
@@ -1959,12 +1961,14 @@
           window.print();
         });
       } else if (typeof html2pdf !== 'undefined') {
+        const fallbackW = (targetEl.offsetWidth || 1200) * 0.264583;
+        const fallbackH = (targetEl.offsetHeight || 4000) * 0.264583;
         const opt = {
           margin: [0, 0, 0, 0],
           filename: fn,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, logging: false },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          jsPDF: { unit: 'mm', format: [fallbackW, fallbackH], orientation: 'portrait' }
         };
         html2pdf().set(opt).from(targetEl).save().then(restoreUI).catch(() => { restoreUI(); window.print(); });
       } else {
