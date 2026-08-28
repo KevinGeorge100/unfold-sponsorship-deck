@@ -221,76 +221,90 @@
       background: #EAEF00;
     }
 
-    /* Clean Print & High-Res PDF Export Styles */
+    /* High-Fidelity @media print CSS Rules (Zero Page Breaks / Split Cards) */
     @media print {
+      /* 1. Page Configuration */
       @page {
         size: A4 portrait;
-        margin: 12mm 10mm;
+        margin: 10mm 10mm 12mm 10mm;
       }
 
-      body, * {
+      /* 2. Preserve Dark Themes, Colors & Gradients */
+      html, body {
+        background-color: #07090e !important;
+        color: #f1f5f9 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
-      }
-
-      html, body {
-        background-color: #FFFFFF !important;
-        color: #0F172A !important;
-        padding: 0 !important;
+        color-adjust: exact !important;
+        width: 100% !important;
         margin: 0 !important;
+        padding: 0 !important;
       }
 
-      /* Clean output: Hide navigation bars, download/print buttons, and floating action controls */
+      /* 3. Hide Interactive & Non-Printable Elements */
       nav,
-      #mobile-menu,
+      header .download-deck-btn,
+      .download-deck-btn,
+      .download-btn,
+      .floating-action-btn,
+      #floating-cta,
       #interactive-bg,
-      .fixed,
-      #slide-nav,
+      #mobile-menu,
       #slide-dots-nav,
-      #spark-modal,
-      button[onclick*="download"],
-      button[onclick*="PDF"],
-      .print-hide {
+      aside,
+      .fixed,
+      button,
+      .interactive-slider-control,
+      input[type="range"] {
         display: none !important;
       }
 
-      /* Prevent page-break cuts across cards, tables, sections, and headers */
+      /* 4. Strict Block Protection: Prevent Cards & Tables from Splitting Across Pages */
+      section,
       .glass-card,
       .glass-deck-card,
       .obsidian-card,
+      .spotlight-card,
+      .pricing-card,
+      .matrix-table-container,
       table,
       tr,
       tbody,
-      thead,
-      section,
-      header {
+      .deliverable-block,
+      .grid > div {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        break-inside: avoid-page !important;
+      }
+
+      table {
+        page-break-inside: auto;
+      }
+      tr {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
 
-      /* Force all slide sections to be 100% revealed */
-      section[id^="slide-"],
-      .reveal-item {
-        opacity: 1 !important;
-        transform: none !important;
-        padding: 1.5rem !important;
-        background: #FFFFFF !important;
-        border: 1px solid #CBD5E1 !important;
-        box-shadow: none !important;
-        border-radius: 1.5rem !important;
+      /* 5. Force New Page on Major Slide Headings */
+      .section-break-before {
+        page-break-before: always !important;
+        break-before: page !important;
       }
 
-      /* Preserve dark Obsidian card backgrounds & Volt accents */
-      .obsidian-card {
-        background-color: #0F172A !important;
-        color: #FFFFFF !important;
+      /* 6. Typography & Contrast Adjustments */
+      h1, h2, h3, h4, h5, p, span, li, td, th {
+        text-shadow: none !important;
+        filter: none !important;
       }
 
-      [class*="bg-[#0F172A]"] {
-        background-color: #0F172A !important;
-        color: #FFFFFF !important;
+      /* Ensure background borders and glassmorphism containers remain visible */
+      .glass-card, .glass-deck-card, .obsidian-card, .border-slate-800 {
+        border-color: rgba(255, 255, 255, 0.15) !important;
+        background-color: #0e121a !important;
+        color: #f1f5f9 !important;
       }
 
+      /* Preserve Volt Yellow accents in print */
       .bg-volt-400 {
         background-color: #EAEF00 !important;
         color: #000000 !important;
@@ -300,23 +314,9 @@
         color: #EAEF00 !important;
       }
 
-      /* Ensure logo wall images print in full color */
       .logo-wall-item {
         filter: none !important;
         opacity: 1 !important;
-      }
-
-      /* Matrix table formatting */
-      .matrix-table th {
-        background-color: #0F172A !important;
-        color: #EAEF00 !important;
-      }
-
-      /* Remove hover animations */
-      .glass-deck-card:hover,
-      .obsidian-card:hover {
-        transform: none !important;
-        box-shadow: none !important;
       }
     }
   </style>
@@ -431,6 +431,10 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <button onclick="window.print()" title="Download Deck PDF"
+          class="download-deck-btn border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-all font-semibold rounded-lg px-3.5 py-1.5 text-xs font-sans tracking-wide whitespace-nowrap">
+          📄 Download Deck (PDF)
+        </button>
         <a href="https://tally.so/r/obZdgN" target="_blank" rel="noopener noreferrer"
           class="magnetic-btn px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-volt-400 text-black font-extrabold text-xs uppercase tracking-wider shadow-md flex items-center gap-2 whitespace-nowrap">
           <span class="w-2 h-2 rounded-full bg-black animate-pulse"></span>
