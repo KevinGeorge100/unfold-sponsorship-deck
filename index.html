@@ -333,6 +333,12 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <button type="button" onclick="downloadDeckPdf()"
+          class="inline-flex items-center gap-2 p-2 sm:px-3.5 sm:py-2 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 font-semibold text-xs hover:bg-amber-500/20 transition whitespace-nowrap"
+          title="Download the sponsorship deck as a PDF">
+          <span aria-hidden="true">📄</span>
+          <span class="hidden sm:inline">Download Deck (PDF)</span>
+        </button>
         <a href="https://tally.so/r/obZdgN" target="_blank" rel="noopener noreferrer"
           class="magnetic-btn px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-volt-400 text-black font-extrabold text-xs uppercase tracking-wider shadow-md flex items-center gap-2 whitespace-nowrap">
           <span class="w-2 h-2 rounded-full bg-black animate-pulse"></span>
@@ -1610,6 +1616,9 @@
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <script>
     // Scroll Reveal System & Slide Indicator Dots Observer
     document.addEventListener('DOMContentLoaded', () => {
@@ -1720,6 +1729,78 @@
         successBox.classList.add('hidden');
         window.open('https://tally.so/r/obZdgN', '_blank');
       }, 1500);
+    }
+
+    async function downloadDeckPdf() {
+      const deck = document.querySelector('.max-w-7xl');
+      const downloadButton = document.querySelector('[onclick="downloadDeckPdf()"]');
+      if (!deck || !window.html2canvas || !window.jspdf) return;
+
+      const hiddenElements = [
+        deck.querySelector('header'),
+        deck.querySelector('#mobile-menu'),
+        document.querySelector('aside'),
+        document.querySelector('.fixed.bottom-0'),
+        document.querySelector('#spark-modal'),
+        downloadButton
+      ].filter(Boolean);
+      const revealItems = deck.querySelectorAll('.reveal-item');
+      const originalStyles = new Map();
+
+      hiddenElements.forEach((element) => {
+        originalStyles.set(element, element.getAttribute('style'));
+        element.style.display = 'none';
+      });
+      revealItems.forEach((element) => {
+        originalStyles.set(element, element.getAttribute('style'));
+        element.style.opacity = '1';
+        element.style.transform = 'none';
+      });
+      document.body.classList.add('pdf-export-mode');
+
+      try {
+        const links = Array.from(deck.querySelectorAll('a[href]')).map((link) => {
+          const rect = link.getBoundingClientRect();
+          const deckRect = deck.getBoundingClientRect();
+          return {
+            href: link.href,
+            x: rect.left - deckRect.left,
+            y: rect.top - deckRect.top,
+            width: rect.width,
+            height: rect.height
+          };
+        });
+        const canvas = await window.html2canvas(deck, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          windowWidth: document.documentElement.scrollWidth,
+          windowHeight: document.documentElement.scrollHeight
+        });
+        const { jsPDF } = window.jspdf;
+        const mmW = 210;
+        const mmH = mmW * canvas.height / canvas.width;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [mmW, mmH], compress: true });
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, mmW, mmH, undefined, 'FAST');
+
+        links.forEach((link) => {
+          if (!link.width || !link.height) return;
+          const x = link.x / deck.offsetWidth * mmW;
+          const y = link.y / deck.offsetHeight * mmH;
+          const width = link.width / deck.offsetWidth * mmW;
+          const height = link.height / deck.offsetHeight * mmH;
+          pdf.link(x, y, width, height, { url: link.href });
+        });
+
+        pdf.save('UNFOLD-2026-Sponsorship-Deck.pdf');
+      } finally {
+        document.body.classList.remove('pdf-export-mode');
+        originalStyles.forEach((style, element) => {
+          if (style === null) element.removeAttribute('style');
+          else element.setAttribute('style', style);
+        });
+      }
     }
   </script>
 
