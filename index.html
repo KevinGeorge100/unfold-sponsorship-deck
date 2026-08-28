@@ -1856,26 +1856,32 @@
 
     function triggerDirectPdfDownload(element, filename, sideNav) {
       const fn = filename || 'UNFOLD_2026_Sponsorship_Deck.pdf';
+      const targetEl = document.querySelector('.max-w-7xl') || document.body;
 
-      // 1. Create a clean off-screen clone container fixed at 1200px width at X=0 to eliminate layout truncation
-      const exportHost = document.createElement('div');
-      exportHost.style.position = 'absolute';
-      exportHost.style.top = '-99999px';
-      exportHost.style.left = '0px';
-      exportHost.style.width = '1200px';
-      exportHost.style.backgroundColor = '#FFFFFF';
-      exportHost.style.zIndex = '-9999';
+      // 1. Temporarily hide UI navigation overlays on live page
+      const header = document.querySelector('header');
+      const mobileNav = document.getElementById('mobile-menu');
+      const mobileBottomBar = document.querySelector('.md\\:hidden.fixed.bottom-0');
+      
+      const prevSideNav = sideNav ? sideNav.style.display : '';
+      const prevHeader = header ? header.style.display : '';
+      const prevMobileNav = mobileNav ? mobileNav.style.display : '';
+      const prevBottomBar = mobileBottomBar ? mobileBottomBar.style.display : '';
 
-      // Clone target element
-      const clone = element.cloneNode(true);
-      clone.style.width = '1200px';
-      clone.style.maxWidth = '1200px';
-      clone.style.margin = '0 auto';
-      clone.style.padding = '20px';
-      clone.style.transform = 'none';
+      if (sideNav) sideNav.style.display = 'none';
+      if (header) header.style.display = 'none';
+      if (mobileNav) mobileNav.style.display = 'none';
+      if (mobileBottomBar) mobileBottomBar.style.display = 'none';
 
-      // Force reveal all scroll-animated items inside clone
-      clone.querySelectorAll('.reveal-item, .magnetic-btn, .glass-deck-card, .obsidian-card').forEach(el => {
+      // 2. Temporarily reveal all scroll animated elements so everything captures crisp
+      const revealItems = document.querySelectorAll('.reveal-item, .magnetic-btn, .glass-deck-card, .obsidian-card');
+      const prevStyles = [];
+      revealItems.forEach((el, i) => {
+        prevStyles[i] = {
+          opacity: el.style.opacity,
+          transform: el.style.transform,
+          transition: el.style.transition
+        };
         el.classList.add('revealed');
         el.style.opacity = '1';
         el.style.transform = 'none';
@@ -1883,101 +1889,86 @@
         el.style.visibility = 'visible';
       });
 
-      // Remove UI navigation overlays inside clone if present
-      const cloneHeader = clone.querySelector('header');
-      const cloneNav = clone.querySelector('#mobile-menu');
-      const cloneSideNav = clone.querySelector('#slide-nav');
-      const cloneBottomBar = clone.querySelector('.md\\:hidden.fixed.bottom-0');
-      
-      if (cloneHeader) cloneHeader.remove();
-      if (cloneNav) cloneNav.remove();
-      if (cloneSideNav) cloneSideNav.remove();
-      if (cloneBottomBar) cloneBottomBar.remove();
-
-      exportHost.appendChild(clone);
-      document.body.appendChild(exportHost);
-
-      function cleanupExport() {
-        if (document.body.contains(exportHost)) {
-          document.body.removeChild(exportHost);
-        }
+      function restoreUI() {
+        if (sideNav) sideNav.style.display = prevSideNav;
+        if (header) header.style.display = prevHeader;
+        if (mobileNav) mobileNav.style.display = prevMobileNav;
+        if (mobileBottomBar) mobileBottomBar.style.display = prevBottomBar;
+        revealItems.forEach((el, i) => {
+          if (prevStyles[i]) {
+            el.style.opacity = prevStyles[i].opacity;
+            el.style.transform = prevStyles[i].transform;
+            el.style.transition = prevStyles[i].transition;
+          }
+        });
       }
 
-      // Check for html2canvas (global or window.html2canvas)
+      // Check for html2canvas
       const html2canvasFunc = typeof window.html2canvas !== 'undefined' ? window.html2canvas : (typeof html2canvas !== 'undefined' ? html2canvas : null);
 
       if (html2canvasFunc) {
-        html2canvasFunc(clone, {
+        html2canvasFunc(targetEl, {
           scale: 2,
           useCORS: true,
           allowTaint: true,
           logging: false,
-          width: 1200,
-          windowWidth: 1200,
-          x: 0,
-          y: 0
+          scrollX: 0,
+          scrollY: -window.scrollY
         }).then(function(canvas) {
           const imgData = canvas.toDataURL('image/jpeg', 0.98);
           
-          // Framed single-page continuous format math matching exact user specification:
-          const pdfW = 210; // Standard 210mm A4 width
-          const margin = 8; // 8mm white margin frame around document
-          const contentW = pdfW - (margin * 2); // 194mm printable width
-          const contentH = (canvas.height / canvas.width) * contentW;
-          const pdfH = contentH + (margin * 2); // Exact 1-page total continuous height
+          // Exact dimensions of canvas in mm for 1 single continuous PDF page
+          const mmW = (canvas.width * 0.264583) / 2;
+          const mmH = (canvas.height * 0.264583) / 2;
 
           const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
 
           if (jsPDFLib) {
+            // Create 1 single PDF page matching exact width and height of website canvas!
             const pdf = new jsPDFLib({
-              orientation: 'portrait',
+              orientation: mmW > mmH ? 'landscape' : 'portrait',
               unit: 'mm',
-              format: [pdfW, pdfH]
+              format: [mmW, mmH]
             });
 
-            // Fill crisp white background frame
-            pdf.setFillColor(255, 255, 255);
-            pdf.rect(0, 0, pdfW, pdfH, 'F');
-
-            // Draw deck image centered with 8mm margin frame
-            pdf.addImage(imgData, 'JPEG', margin, margin, contentW, contentH);
-            addExactPdfLinksSinglePage(pdf, element, margin, margin, contentW);
+            pdf.addImage(imgData, 'JPEG', 0, 0, mmW, mmH);
+            addExactPdfLinksSinglePage(pdf, targetEl, 0, 0, mmW);
             
             savePdfUniversal(pdf, fn);
-            cleanupExport();
+            restoreUI();
             return;
           }
 
           if (typeof html2pdf !== 'undefined') {
             const opt = {
-              margin: [8, 8, 8, 8],
+              margin: [0, 0, 0, 0],
               filename: fn,
               image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { scale: 2, useCORS: true, logging: false, width: 1200, windowWidth: 1200 },
-              jsPDF: { unit: 'mm', format: [pdfW, pdfH], orientation: 'portrait' }
+              html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: -window.scrollY },
+              jsPDF: { unit: 'mm', format: [mmW, mmH], orientation: mmW > mmH ? 'landscape' : 'portrait' }
             };
-            html2pdf().set(opt).from(clone).save().then(cleanupExport).catch(() => { cleanupExport(); window.print(); });
+            html2pdf().set(opt).from(targetEl).save().then(restoreUI).catch(() => { restoreUI(); window.print(); });
             return;
           }
 
-          cleanupExport();
+          restoreUI();
           window.print();
         }).catch(function(err) {
           console.error("Canvas render error:", err);
-          cleanupExport();
+          restoreUI();
           window.print();
         });
       } else if (typeof html2pdf !== 'undefined') {
         const opt = {
-          margin: [8, 8, 8, 8],
+          margin: [0, 0, 0, 0],
           filename: fn,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, logging: false, width: 1200, windowWidth: 1200 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
-        html2pdf().set(opt).from(clone).save().then(cleanupExport).catch(() => { cleanupExport(); window.print(); });
+        html2pdf().set(opt).from(targetEl).save().then(restoreUI).catch(() => { restoreUI(); window.print(); });
       } else {
-        cleanupExport();
+        restoreUI();
         window.print();
       }
     }
