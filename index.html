@@ -1887,17 +1887,16 @@
       }
     }
 
-    // Single-Page Continuous PDF Generator (1 Single Page = 100% Content)
-    function downloadPDFDirect() {
+    // Multi-Page Slide-by-Slide A4 PDF Generator
+    async function downloadPDFDirect() {
       const btn = document.querySelector('.download-deck-btn');
       const originalText = btn ? btn.innerHTML : '';
       if (btn) {
-        btn.innerHTML = '⏳ Generating 1-Page PDF...';
+        btn.innerHTML = '⏳ Generating PDF Deck...';
         btn.disabled = true;
       }
 
       document.body.classList.add('pdf-exporting');
-      const targetEl = document.querySelector('.max-w-7xl') || document.body;
 
       // Reveal all animated elements so canvas captures crisp visibility
       const revealItems = document.querySelectorAll('.reveal-item, .glass-deck-card, .obsidian-card');
@@ -1909,40 +1908,58 @@
       const currentScrollY = window.scrollY;
       window.scrollTo(0, 0);
 
-      // Detect active device viewport width
-      const deviceW = window.innerWidth || document.documentElement.clientWidth || 390;
-      const isMobile = deviceW < 640;
-      const renderScale = isMobile ? 2.0 : 2.5;
-
       const html2canvasFunc = typeof window.html2canvas !== 'undefined' ? window.html2canvas : (typeof html2canvas !== 'undefined' ? html2canvas : null);
       const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
 
-      const renderCanvas = () => {
-        if (html2canvasFunc && jsPDFLib) {
-          html2canvasFunc(targetEl, {
-            scale: renderScale,
+      if (!html2canvasFunc || !jsPDFLib) {
+        console.warn("PDF libraries missing, triggering window.print()");
+        document.body.classList.remove('pdf-exporting');
+        window.scrollTo(0, currentScrollY);
+        if (btn) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+        window.print();
+        return;
+      }
+
+      const slideIds = ['slide-1', 'slide-2', 'slide-3', 'slide-3b', 'slide-3c', 'slide-4', 'slide-5', 'slide-6', 'slide-7', 'slide-8', 'slide-9', 'slide-10'];
+      
+      try {
+        let pdf = null;
+        const pageW = 210;
+        const pageH = 297;
+        const margin = 8;
+        const printableW = pageW - (margin * 2); // 194mm
+        const printableH = pageH - (margin * 2); // 281mm
+
+        for (let i = 0; i < slideIds.length; i++) {
+          const slideEl = document.getElementById(slideIds[i]);
+          if (!slideEl) continue;
+
+          const canvas = await html2canvasFunc(slideEl, {
+            scale: 2.2,
             useCORS: true,
             allowTaint: true,
             logging: false,
-            backgroundColor: '#07090e',
-            windowWidth: deviceW,
-            scrollX: 0,
-            scrollY: 0
-          }).then(function(canvas) {
-            const imgData = canvas.toDataURL('image/jpeg', 0.98);
-            
-            // Calculate exact dimensions in mm for 1 single continuous PDF page (Total Pages = 1)
-            const mmW = (canvas.width * 0.264583) / renderScale;
-            const mmH = (canvas.height * 0.264583) / renderScale;
+            backgroundColor: '#07090e'
+          });
 
-            // Create 1 single PDF page matching exact width and height of canvas!
-            const pdf = new jsPDFLib({
-              orientation: mmW > mmH ? 'landscape' : 'portrait',
-              unit: 'mm',
-              format: [mmW, mmH]
-            });
+          const imgData = canvas.toDataURL('image/jpeg', 0.98);
+          
+          let imgW = printableW;
+          let imgH = (canvas.height * printableW) / canvas.width;
+          if (imgH > printableH) {
+            const ratio = printableH / imgH;
+            imgH = printableH;
+            imgW = printableW * ratio;
+          }
 
-            // Embed Document Metadata
+          const x = margin + (printableW - imgW) / 2;
+          const y = margin + (printableH - imgH) / 2;
+
+          if (!pdf) {
+            pdf = new jsPDFLib({ unit: 'mm', format: 'a4', orientation: 'portrait' });
             pdf.setProperties({
               title: 'UNFOLD 2026 — Sponsorship Opportunity Deck',
               subject: '48-Hour Residential Startup Bootcamp & Innovation Summit',
@@ -1950,71 +1967,29 @@
               keywords: 'UNFOLD 2026, Sponsorship Deck, IEEE, Startup Bootcamp, Innovation',
               creator: 'UNFOLD 2026 Organizing Committee'
             });
-
-            pdf.addImage(imgData, 'JPEG', 0, 0, mmW, mmH);
-            
-            // Inject exact clickable PDF hyperlinks
-            addExactPdfLinksToDoc(pdf, targetEl, 0, 0, mmW);
-
-            const fn = isMobile ? 'UNFOLD_2026_Mobile_Deck.pdf' : 'UNFOLD_2026_Sponsorship_Deck.pdf';
-            
-            savePdfUniversal(pdf, fn);
-            
-            document.body.classList.remove('pdf-exporting');
-            window.scrollTo(0, currentScrollY);
-            if (btn) {
-              btn.innerHTML = originalText;
-              btn.disabled = false;
-            }
-          }).catch(function(err) {
-            console.error("Canvas render error:", err);
-            document.body.classList.remove('pdf-exporting');
-            window.scrollTo(0, currentScrollY);
-            if (btn) {
-              btn.innerHTML = originalText;
-              btn.disabled = false;
-            }
-            window.print();
-          });
-        } else if (typeof html2pdf !== 'undefined') {
-          const opt = {
-            margin: [0, 0, 0, 0],
-            filename: 'UNFOLD_2026_Sponsorship_Deck.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: renderScale, useCORS: true, logging: false, backgroundColor: '#07090e', windowWidth: deviceW },
-            jsPDF: { unit: 'mm', format: [300, 3500], orientation: 'portrait' }
-          };
-          html2pdf().set(opt).from(targetEl).save().then(() => {
-            document.body.classList.remove('pdf-exporting');
-            window.scrollTo(0, currentScrollY);
-            if (btn) {
-              btn.innerHTML = originalText;
-              btn.disabled = false;
-            }
-          }).catch(() => {
-            document.body.classList.remove('pdf-exporting');
-            window.scrollTo(0, currentScrollY);
-            if (btn) {
-              btn.innerHTML = originalText;
-              btn.disabled = false;
-            }
-            window.print();
-          });
-        } else {
-          document.body.classList.remove('pdf-exporting');
-          window.scrollTo(0, currentScrollY);
-          if (btn) {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
+          } else {
+            pdf.addPage('a4', 'portrait');
           }
+
+          pdf.addImage(imgData, 'JPEG', x, y, imgW, imgH);
+          addExactPdfLinksToDoc(pdf, slideEl, x, y, imgW);
+        }
+
+        if (pdf) {
+          savePdfUniversal(pdf, 'UNFOLD_2026_Sponsorship_Deck.pdf');
+        } else {
           window.print();
         }
-      };
-
-      if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(renderCanvas).catch(renderCanvas);
-      } else {
-        setTimeout(renderCanvas, 200);
+      } catch (err) {
+        console.error("Multi-page PDF generation error:", err);
+        window.print();
+      } finally {
+        document.body.classList.remove('pdf-exporting');
+        window.scrollTo(0, currentScrollY);
+        if (btn) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
       }
     }
 
