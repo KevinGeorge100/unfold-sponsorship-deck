@@ -1806,7 +1806,7 @@
       }
     }
 
-    // Direct 1-Click PDF Download Generator (WITHOUT system print dialog)
+    // Dynamic Device-Aware 1-Click PDF Generator (Phone, Tablet, Laptop, Desktop)
     function downloadPDFDirect() {
       const btn = document.querySelector('.download-deck-btn');
       const originalText = btn ? btn.innerHTML : '';
@@ -1818,21 +1818,33 @@
       document.body.classList.add('pdf-exporting');
       const targetEl = document.querySelector('.max-w-7xl') || document.body;
 
+      // Reveal all animated elements so canvas captures crisp visibility
       const revealItems = document.querySelectorAll('.reveal-item, .glass-deck-card, .obsidian-card');
       revealItems.forEach(el => {
         el.style.opacity = '1';
         el.style.transform = 'none';
       });
 
+      // Detect active device viewport width
+      const deviceW = window.innerWidth || document.documentElement.clientWidth || 390;
+      const isMobile = deviceW < 640;
+      const isTablet = deviceW >= 640 && deviceW < 1024;
+
+      // Dynamic PDF options based on device screen type
+      const pdfMargins = isMobile ? [6, 6, 8, 6] : (isTablet ? [8, 8, 10, 8] : [10, 10, 12, 10]);
+      const renderScale = isMobile ? 2.0 : 2.5;
+
       const opt = {
-        margin: [10, 10, 12, 10],
-        filename: 'UNFOLD_2026_Sponsorship_Deck.pdf',
+        margin: pdfMargins,
+        filename: isMobile ? 'UNFOLD_2026_Mobile_Deck.pdf' : 'UNFOLD_2026_Sponsorship_Deck.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
-          scale: 2,
+          scale: renderScale,
           useCORS: true,
+          allowTaint: true,
           logging: false,
           backgroundColor: '#07090e',
+          windowWidth: deviceW,
           scrollX: 0,
           scrollY: 0
         },
