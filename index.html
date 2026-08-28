@@ -1826,109 +1826,124 @@
       });
     }
 
-    // Direct Programmatic PDF File Download Exporter (Zero Print Dialogs, Zero Extra Blank Pages)
+    // Direct Programmatic PDF File Download Exporter — True Continuous Pageless Format (Zero Page Splits!)
     function triggerDirectPdfDownload(element, filename, sideNav) {
       const fn = filename || 'UNFOLD_2026_Sponsorship_Deck.pdf';
 
-      // Check if html2canvas is available globally
-      const html2canvasFunc = typeof window.html2canvas !== 'undefined' ? window.html2canvas : (typeof html2canvas !== 'undefined' ? html2canvas : null);
+      // 1. Hide UI navigation overlays during render
+      const header = document.querySelector('header');
+      const mobileNav = document.getElementById('mobile-menu');
+      const mobileBottomBar = document.querySelector('.md\\:hidden.fixed.bottom-0');
+      
+      const prevSideNav = sideNav ? sideNav.style.display : '';
+      const prevHeader = header ? header.style.display : '';
+      const prevMobileNav = mobileNav ? mobileNav.style.display : '';
+      const prevBottomBar = mobileBottomBar ? mobileBottomBar.style.display : '';
 
-      if (html2canvasFunc) {
-        html2canvasFunc(element, { scale: 2, useCORS: true, logging: false, scrollY: 0 }).then(function(canvas) {
-          const imgData = canvas.toDataURL('image/jpeg', 0.98);
-          const mmW = (canvas.width * 0.264583) / 2;
-          const mmH = (canvas.height * 0.264583) / 2;
+      if (sideNav) sideNav.style.display = 'none';
+      if (header) header.style.display = 'none';
+      if (mobileNav) mobileNav.style.display = 'none';
+      if (mobileBottomBar) mobileBottomBar.style.display = 'none';
 
-          const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
-          if (jsPDFLib) {
-            const pdf = new jsPDFLib({
-              orientation: mmW > mmH ? 'landscape' : 'portrait',
-              unit: 'mm',
-              format: [mmW + 8, mmH + 8]
-            });
-
-            pdf.addImage(imgData, 'JPEG', 4, 4, mmW, mmH);
-            addExactPdfLinksSinglePage(pdf, element, 4, 4, mmW);
-            pdf.save(fn);
-            if (sideNav) sideNav.style.display = '';
-            return;
-          }
-
-          // Fallback to html2pdf if jsPDFLib not found directly
-          if (typeof html2pdf !== 'undefined') {
-            const opt = {
-              margin: [4, 4, 4, 4],
-              filename: fn,
-              image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-              jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save().then(() => {
-              if (sideNav) sideNav.style.display = '';
-            }).catch(() => {
-              window.print();
-              if (sideNav) sideNav.style.display = '';
-            });
-            return;
-          }
-
-          window.print();
-          if (sideNav) sideNav.style.display = '';
-        }).catch(function(err) {
-          console.error("Canvas render error:", err);
-          window.print();
-          if (sideNav) sideNav.style.display = '';
-        });
-      } else if (typeof html2pdf !== 'undefined') {
-        const opt = {
-          margin: [4, 4, 4, 4],
-          filename: fn,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      // 2. Force reveal all scroll-animated items
+      const revealItems = document.querySelectorAll('.reveal-item, .magnetic-btn, .glass-deck-card, .obsidian-card');
+      const prevStyles = [];
+      revealItems.forEach((el, i) => {
+        prevStyles[i] = {
+          opacity: el.style.opacity,
+          transform: el.style.transform,
+          transition: el.style.transition
         };
-        html2pdf().set(opt).from(element).save().then(() => {
-          if (sideNav) sideNav.style.display = '';
-        }).catch(() => {
-          window.print();
-          if (sideNav) sideNav.style.display = '';
-        });
-      } else {
-        window.print();
-        if (sideNav) sideNav.style.display = '';
-      }
-    }
-
-    // Programmatic 1-Click PDF Download Generator (html2pdf.js)
-    function downloadPDF() {
-      // Reveal all items prior to PDF rendering & disable transient CSS transforms
-      document.querySelectorAll('.reveal-item, .magnetic-btn, .glass-deck-card, .obsidian-card').forEach(el => {
         el.classList.add('revealed');
         el.style.opacity = '1';
         el.style.transform = 'none';
         el.style.transition = 'none';
       });
 
-      const sideNav = document.getElementById('slide-nav');
-      if (sideNav) sideNav.style.display = 'none';
+      function restoreUI() {
+        if (sideNav) sideNav.style.display = prevSideNav;
+        if (header) header.style.display = prevHeader;
+        if (mobileNav) mobileNav.style.display = prevMobileNav;
+        if (mobileBottomBar) mobileBottomBar.style.display = prevBottomBar;
+        revealItems.forEach((el, i) => {
+          if (prevStyles[i]) {
+            el.style.opacity = prevStyles[i].opacity;
+            el.style.transform = prevStyles[i].transform;
+            el.style.transition = prevStyles[i].transition;
+          }
+        });
+      }
 
+      // Check for html2canvas (global or window.html2canvas)
+      const html2canvasFunc = typeof window.html2canvas !== 'undefined' ? window.html2canvas : (typeof html2canvas !== 'undefined' ? html2canvas : null);
+
+      if (html2canvasFunc) {
+        html2canvasFunc(element, { scale: 2, useCORS: true, logging: false, scrollY: 0, windowWidth: 1280 }).then(function(canvas) {
+          const imgData = canvas.toDataURL('image/jpeg', 0.98);
+          const mmW = 210; // Standard width in mm
+          const mmH = (canvas.height / canvas.width) * mmW; // Proportional continuous single-page height
+
+          const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
+
+          if (jsPDFLib) {
+            // Create 1 single pageless PDF page with exact continuous height!
+            const pdf = new jsPDFLib({
+              orientation: 'portrait',
+              unit: 'mm',
+              format: [mmW, mmH]
+            });
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, mmW, mmH);
+            addExactPdfLinksSinglePage(pdf, element, 0, 0, mmW);
+            pdf.save(fn);
+            restoreUI();
+            return;
+          }
+
+          if (typeof html2pdf !== 'undefined') {
+            const opt = {
+              margin: [0, 0, 0, 0],
+              filename: fn,
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, windowWidth: 1280 },
+              jsPDF: { unit: 'mm', format: [mmW, mmH], orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save().then(restoreUI).catch(() => { restoreUI(); window.print(); });
+            return;
+          }
+
+          restoreUI();
+          window.print();
+        }).catch(function(err) {
+          console.error("Canvas render error:", err);
+          restoreUI();
+          window.print();
+        });
+      } else if (typeof html2pdf !== 'undefined') {
+        const opt = {
+          margin: [0, 0, 0, 0],
+          filename: fn,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, windowWidth: 1280 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save().then(restoreUI).catch(() => { restoreUI(); window.print(); });
+      } else {
+        restoreUI();
+        window.print();
+      }
+    }
+
+    // Programmatic 1-Click PDF Download Generator (html2pdf.js)
+    function downloadPDF() {
+      const sideNav = document.getElementById('slide-nav');
       const element = document.querySelector('.max-w-7xl') || document.body;
       triggerDirectPdfDownload(element, 'UNFOLD_2026_Sponsorship_Deck.pdf', sideNav);
     }
 
     // Programmatic Pageless (Continuous Single-Page) PDF Generator
     function downloadPagelessPDF() {
-      // Reveal all items prior to rendering & disable transient CSS transforms
-      document.querySelectorAll('.reveal-item, .magnetic-btn, .glass-deck-card, .obsidian-card').forEach(el => {
-        el.classList.add('revealed');
-        el.style.opacity = '1';
-        el.style.transform = 'none';
-        el.style.transition = 'none';
-      });
-
       const sideNav = document.getElementById('slide-nav');
-      if (sideNav) sideNav.style.display = 'none';
-
       const element = document.querySelector('.max-w-7xl') || document.body;
       triggerDirectPdfDownload(element, 'UNFOLD_2026_Sponsorship_Deck.pdf', sideNav);
     }
