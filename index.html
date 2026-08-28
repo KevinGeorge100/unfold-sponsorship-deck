@@ -1828,49 +1828,75 @@
 
     // Direct Programmatic PDF File Download Exporter (Zero Print Dialogs, Zero Extra Blank Pages)
     function triggerDirectPdfDownload(element, filename, sideNav) {
-      const getCanvas = (typeof html2canvas !== 'undefined')
-        ? html2canvas(element, { scale: 2, useCORS: true, logging: false, scrollY: 0 })
-        : (typeof html2pdf !== 'undefined'
-            ? html2pdf().from(element).toContainer().toCanvas().get('canvas')
-            : null);
+      const fn = filename || 'UNFOLD_2026_Sponsorship_Deck.pdf';
 
-      if (!getCanvas) {
-        alert('PDF generator library is initializing. Please click again in a moment.');
-        if (sideNav) sideNav.style.display = '';
-        return;
-      }
+      // Check if html2canvas is available globally
+      const html2canvasFunc = typeof window.html2canvas !== 'undefined' ? window.html2canvas : (typeof html2canvas !== 'undefined' ? html2canvas : null);
 
-      Promise.resolve(getCanvas).then(function(canvas) {
-        const imgData = canvas.toDataURL('image/jpeg', 0.98);
-        const mmW = (canvas.width * 0.264583) / 2;
-        const mmH = (canvas.height * 0.264583) / 2;
+      if (html2canvasFunc) {
+        html2canvasFunc(element, { scale: 2, useCORS: true, logging: false, scrollY: 0 }).then(function(canvas) {
+          const imgData = canvas.toDataURL('image/jpeg', 0.98);
+          const mmW = (canvas.width * 0.264583) / 2;
+          const mmH = (canvas.height * 0.264583) / 2;
 
-        const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
-        if (!jsPDFLib) {
-          console.error("jsPDF library not found");
+          const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
+          if (jsPDFLib) {
+            const pdf = new jsPDFLib({
+              orientation: mmW > mmH ? 'landscape' : 'portrait',
+              unit: 'mm',
+              format: [mmW + 8, mmH + 8]
+            });
+
+            pdf.addImage(imgData, 'JPEG', 4, 4, mmW, mmH);
+            addExactPdfLinksSinglePage(pdf, element, 4, 4, mmW);
+            pdf.save(fn);
+            if (sideNav) sideNav.style.display = '';
+            return;
+          }
+
+          // Fallback to html2pdf if jsPDFLib not found directly
+          if (typeof html2pdf !== 'undefined') {
+            const opt = {
+              margin: [4, 4, 4, 4],
+              filename: fn,
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+              jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save().then(() => {
+              if (sideNav) sideNav.style.display = '';
+            }).catch(() => {
+              window.print();
+              if (sideNav) sideNav.style.display = '';
+            });
+            return;
+          }
+
+          window.print();
           if (sideNav) sideNav.style.display = '';
-          return;
-        }
-
-        // Create PDF with EXACT dimensions of canvas (1 single page!)
-        const pdf = new jsPDFLib({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: [mmW + 8, mmH + 8]
+        }).catch(function(err) {
+          console.error("Canvas render error:", err);
+          window.print();
+          if (sideNav) sideNav.style.display = '';
         });
-
-        pdf.addImage(imgData, 'JPEG', 4, 4, mmW, mmH);
-
-        // Add exact link overlays for single page
-        addExactPdfLinksSinglePage(pdf, element, 4, 4, mmW);
-
-        // Directly save/download PDF file without print interface
-        pdf.save(filename || 'UNFOLD_2026_Sponsorship_Deck.pdf');
+      } else if (typeof html2pdf !== 'undefined') {
+        const opt = {
+          margin: [4, 4, 4, 4],
+          filename: fn,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save().then(() => {
+          if (sideNav) sideNav.style.display = '';
+        }).catch(() => {
+          window.print();
+          if (sideNav) sideNav.style.display = '';
+        });
+      } else {
+        window.print();
         if (sideNav) sideNav.style.display = '';
-      }).catch(function(err) {
-        console.error("PDF generation error:", err);
-        if (sideNav) sideNav.style.display = '';
-      });
+      }
     }
 
     // Programmatic 1-Click PDF Download Generator (html2pdf.js)
