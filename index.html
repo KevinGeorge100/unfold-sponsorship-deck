@@ -1786,6 +1786,7 @@
         document.querySelector('#spark-modal'),
         downloadButton
       ].filter(Boolean);
+
       const revealItems = deck.querySelectorAll('.reveal-item');
       const originalStyles = new Map();
 
@@ -1793,49 +1794,60 @@
         originalStyles.set(element, element.getAttribute('style'));
         element.style.display = 'none';
       });
+
       revealItems.forEach((element) => {
         originalStyles.set(element, element.getAttribute('style'));
         element.style.opacity = '1';
         element.style.transform = 'none';
       });
+
       document.body.classList.add('pdf-export-mode');
 
       try {
-        const links = Array.from(deck.querySelectorAll('a[href]')).map((link) => {
-          const rect = link.getBoundingClientRect();
-          const deckRect = deck.getBoundingClientRect();
-          return {
-            href: link.href,
-            x: rect.left - deckRect.left,
-            y: rect.top - deckRect.top,
-            width: rect.width,
-            height: rect.height
-          };
-        });
-        const canvas = await window.html2canvas(deck, {
-          backgroundColor: '#ffffff',
-          scale: 1.6,
-          useCORS: true,
-          logging: false,
-          windowWidth: deck.scrollWidth + 40,
-          windowHeight: deck.scrollHeight + 40,
-          scrollX: 0,
-          scrollY: 0
-        });
         const { jsPDF } = window.jspdf;
-        const mmW = 210;
-        const mmH = mmW * canvas.height / canvas.width;
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [mmW, mmH], compress: true });
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, mmW, mmH, undefined, 'FAST');
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 8;
 
-        links.forEach((link) => {
-          if (!link.width || !link.height) return;
-          const x = link.x / deck.offsetWidth * mmW;
-          const y = link.y / deck.offsetHeight * mmH;
-          const width = link.width / deck.offsetWidth * mmW;
-          const height = link.height / deck.offsetHeight * mmH;
-          pdf.link(x, y, width, height, { url: link.href });
-        });
+        const slides = Array.from(document.querySelectorAll('section[id^="slide-"]'));
+
+        for (let index = 0; index < slides.length; index += 1) {
+          const slide = slides[index];
+          if (index > 0) pdf.addPage();
+
+          const slideWidth = slide.scrollWidth || slide.offsetWidth || 1000;
+          const slideHeight = slide.scrollHeight || slide.offsetHeight || 1200;
+
+          const slideCanvas = await window.html2canvas(slide, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            width: slideWidth,
+            height: slideHeight,
+            windowWidth: slideWidth + 60,
+            windowHeight: slideHeight + 60,
+            scrollX: 0,
+            scrollY: 0
+          });
+
+          const imgData = slideCanvas.toDataURL('image/jpeg', 0.95);
+          const imgRatio = slideCanvas.width / slideCanvas.height;
+          const fitWidth = pageWidth - (margin * 2);
+          let imgWidth = fitWidth;
+          let imgHeight = imgWidth / imgRatio;
+
+          if (imgHeight > pageHeight - (margin * 2)) {
+            imgHeight = pageHeight - (margin * 2);
+            imgWidth = imgHeight * imgRatio;
+          }
+
+          const x = (pageWidth - imgWidth) / 2;
+          const y = (pageHeight - imgHeight) / 2;
+
+          pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'FAST');
+        }
 
         pdf.save('UNFOLD-2026-Sponsorship-Deck.pdf');
       } finally {
