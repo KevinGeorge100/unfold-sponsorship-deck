@@ -114,6 +114,48 @@
       border-color: rgba(234, 239, 0, 0.9);
     }
 
+    /* PDF export safety: keep badges centered and stable during html2canvas capture */
+    body.pdf-export-mode {
+      overflow: visible !important;
+    }
+
+    body.pdf-export-mode .reveal-item {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    body.pdf-export-mode .inline-block,
+    body.pdf-export-mode .inline-flex,
+    body.pdf-export-mode #calc-tier-badge,
+    body.pdf-export-mode .tier-pill-btn > div,
+    body.pdf-export-mode [class*="rounded-full"] {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      white-space: nowrap !important;
+      line-height: 1.2 !important;
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+      }
+
+      .reveal-item {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+
+      .fixed,
+      aside,
+      .slide-dot,
+      .group-hover\:inline,
+      #mobile-menu {
+        display: none !important;
+      }
+    }
+
     /* Dedicated Real Obsidian Navy Feature Card */
     .obsidian-card {
       background: #0F172A;
@@ -1772,11 +1814,13 @@
         });
         const canvas = await window.html2canvas(deck, {
           backgroundColor: '#ffffff',
-          scale: 2,
+          scale: 1.6,
           useCORS: true,
           logging: false,
-          windowWidth: document.documentElement.scrollWidth,
-          windowHeight: document.documentElement.scrollHeight
+          windowWidth: deck.scrollWidth + 40,
+          windowHeight: deck.scrollHeight + 40,
+          scrollX: 0,
+          scrollY: 0
         });
         const { jsPDF } = window.jspdf;
         const mmW = 210;
