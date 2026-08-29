@@ -375,12 +375,6 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-        <button type="button" onclick="downloadDeckPdf()"
-          class="inline-flex items-center gap-2 p-2 sm:px-3.5 sm:py-2 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 font-semibold text-xs hover:bg-amber-500/20 transition whitespace-nowrap"
-          title="Download the sponsorship deck as a PDF">
-          <span aria-hidden="true">📄</span>
-          <span class="hidden sm:inline">Download Deck (PDF)</span>
-        </button>
         <a href="https://tally.so/r/obZdgN" target="_blank" rel="noopener noreferrer"
           class="magnetic-btn px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-volt-400 text-black font-extrabold text-xs uppercase tracking-wider shadow-md flex items-center gap-2 whitespace-nowrap">
           <span class="w-2 h-2 rounded-full bg-black animate-pulse"></span>
@@ -1658,9 +1652,6 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
   <script>
     // Scroll Reveal System & Slide Indicator Dots Observer
     document.addEventListener('DOMContentLoaded', () => {
@@ -1773,99 +1764,6 @@
       }, 1500);
     }
 
-    async function downloadDeckPdf() {
-      const slides = Array.from(document.querySelectorAll('section[id^="slide-"]'));
-      const downloadButton = document.querySelector('[onclick="downloadDeckPdf()"]');
-
-      if (!slides.length || !window.html2canvas || !window.jspdf) return;
-
-      const originalOverflowX = document.body.style.overflowX;
-      const originalOverflowY = document.body.style.overflowY;
-      const originalHtmlOverflow = document.documentElement.style.overflow;
-      const originalStyles = new Map();
-
-      slides.forEach((slide) => {
-        originalStyles.set(slide, slide.getAttribute('style'));
-        slide.style.opacity = '1';
-        slide.style.transform = 'none';
-      });
-
-      document.body.classList.add('pdf-export-mode');
-      document.body.style.overflowX = 'visible';
-      document.body.style.overflowY = 'visible';
-      document.documentElement.style.overflow = 'visible';
-      if (downloadButton) downloadButton.disabled = true;
-
-      try {
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const margin = 8;
-
-        for (let index = 0; index < slides.length; index += 1) {
-          const slide = slides[index];
-          if (index > 0) pdf.addPage();
-
-          const slideWidth = slide.scrollWidth || slide.offsetWidth || 1200;
-          const slideHeight = slide.scrollHeight || slide.offsetHeight || 1500;
-
-          const canvas = await window.html2canvas(slide, {
-            backgroundColor: '#ffffff',
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            width: slideWidth,
-            height: slideHeight,
-            windowWidth: slideWidth + 80,
-            windowHeight: slideHeight + 80,
-            scrollX: 0,
-            scrollY: 0,
-            ignoreElements: (element) => {
-              if (!element) return false;
-              return element.matches && (
-                element.matches('aside') ||
-                element.matches('#mobile-menu') ||
-                element.matches('#spark-modal') ||
-                element.matches('.slide-dot') ||
-                element.matches('[onclick*="downloadDeckPdf"]') ||
-                element.matches('.fixed')
-              );
-            }
-          });
-
-          const imgData = canvas.toDataURL('image/jpeg', 0.95);
-          const imgRatio = canvas.width / canvas.height;
-          let imgWidth = pageWidth - (margin * 2);
-          let imgHeight = imgWidth / imgRatio;
-
-          if (imgHeight > pageHeight - (margin * 2)) {
-            imgHeight = pageHeight - (margin * 2);
-            imgWidth = imgHeight * imgRatio;
-          }
-
-          const x = (pageWidth - imgWidth) / 2;
-          const y = (pageHeight - imgHeight) / 2;
-          pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'FAST');
-        }
-
-        pdf.save('UNFOLD-2026-Sponsorship-Deck.pdf');
-      } finally {
-        document.body.classList.remove('pdf-export-mode');
-        document.body.style.overflowX = originalOverflowX;
-        document.body.style.overflowY = originalOverflowY;
-        document.documentElement.style.overflow = originalHtmlOverflow;
-        if (downloadButton) downloadButton.disabled = false;
-
-        originalStyles.forEach((style, slide) => {
-          if (style === null) {
-            slide.removeAttribute('style');
-          } else {
-            slide.setAttribute('style', style);
-          }
-        });
-      }
-    }
   </script>
 
   <!-- Interactive Rotating Cosmic Blue Black Hole Canvas Background Script -->
