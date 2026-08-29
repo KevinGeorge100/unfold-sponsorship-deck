@@ -138,48 +138,21 @@
     }
 
     @media print {
-      @page {
-        size: A4 portrait;
-        margin: 8mm;
-      }
-
-      html, body {
-        background: #ffffff !important;
-        print-color-adjust: exact;
-        -webkit-print-color-adjust: exact;
-      }
-
       body {
-        padding: 0 !important;
-        margin: 0 !important;
+        background: #ffffff !important;
       }
 
       .reveal-item {
         opacity: 1 !important;
         transform: none !important;
-        page-break-after: always !important;
       }
 
       .fixed,
       aside,
       .slide-dot,
-      #mobile-menu,
-      [onclick*="downloadDeckPdf"],
       .group-hover\:inline,
-      .magnetic-btn,
-      .spark-modal,
-      #spark-modal {
+      #mobile-menu {
         display: none !important;
-      }
-
-      .max-w-7xl {
-        max-width: none !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        border: none !important;
-        background: #ffffff !important;
       }
     }
 
@@ -1800,20 +1773,98 @@
       }, 1500);
     }
 
-    function downloadDeckPdf() {
-      const deck = document.querySelector('.max-w-7xl');
+    async function downloadDeckPdf() {
+      const slides = Array.from(document.querySelectorAll('section[id^="slide-"]'));
       const downloadButton = document.querySelector('[onclick="downloadDeckPdf()"]');
-      if (!deck) return;
+
+      if (!slides.length || !window.html2canvas || !window.jspdf) return;
+
+      const originalOverflowX = document.body.style.overflowX;
+      const originalOverflowY = document.body.style.overflowY;
+      const originalHtmlOverflow = document.documentElement.style.overflow;
+      const originalStyles = new Map();
+
+      slides.forEach((slide) => {
+        originalStyles.set(slide, slide.getAttribute('style'));
+        slide.style.opacity = '1';
+        slide.style.transform = 'none';
+      });
 
       document.body.classList.add('pdf-export-mode');
+      document.body.style.overflowX = 'visible';
+      document.body.style.overflowY = 'visible';
+      document.documentElement.style.overflow = 'visible';
       if (downloadButton) downloadButton.disabled = true;
 
-      window.print();
+      try {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 8;
 
-      setTimeout(() => {
+        for (let index = 0; index < slides.length; index += 1) {
+          const slide = slides[index];
+          if (index > 0) pdf.addPage();
+
+          const slideWidth = slide.scrollWidth || slide.offsetWidth || 1200;
+          const slideHeight = slide.scrollHeight || slide.offsetHeight || 1500;
+
+          const canvas = await window.html2canvas(slide, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            width: slideWidth,
+            height: slideHeight,
+            windowWidth: slideWidth + 80,
+            windowHeight: slideHeight + 80,
+            scrollX: 0,
+            scrollY: 0,
+            ignoreElements: (element) => {
+              if (!element) return false;
+              return element.matches && (
+                element.matches('aside') ||
+                element.matches('#mobile-menu') ||
+                element.matches('#spark-modal') ||
+                element.matches('.slide-dot') ||
+                element.matches('[onclick*="downloadDeckPdf"]') ||
+                element.matches('.fixed')
+              );
+            }
+          });
+
+          const imgData = canvas.toDataURL('image/jpeg', 0.95);
+          const imgRatio = canvas.width / canvas.height;
+          let imgWidth = pageWidth - (margin * 2);
+          let imgHeight = imgWidth / imgRatio;
+
+          if (imgHeight > pageHeight - (margin * 2)) {
+            imgHeight = pageHeight - (margin * 2);
+            imgWidth = imgHeight * imgRatio;
+          }
+
+          const x = (pageWidth - imgWidth) / 2;
+          const y = (pageHeight - imgHeight) / 2;
+          pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'FAST');
+        }
+
+        pdf.save('UNFOLD-2026-Sponsorship-Deck.pdf');
+      } finally {
         document.body.classList.remove('pdf-export-mode');
+        document.body.style.overflowX = originalOverflowX;
+        document.body.style.overflowY = originalOverflowY;
+        document.documentElement.style.overflow = originalHtmlOverflow;
         if (downloadButton) downloadButton.disabled = false;
-      }, 800);
+
+        originalStyles.forEach((style, slide) => {
+          if (style === null) {
+            slide.removeAttribute('style');
+          } else {
+            slide.setAttribute('style', style);
+          }
+        });
+      }
     }
   </script>
 
